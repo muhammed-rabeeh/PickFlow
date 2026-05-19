@@ -1,4 +1,4 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -232,6 +232,16 @@
       <div id="taskList" class="max-h-60 overflow-y-auto flex flex-col gap-2 pr-1 min-h-[100px]">
         <!-- Dynamic Tasks will build here -->
       </div>
+
+      <!-- Save / Load Day Templates -->
+      <div class="flex gap-2 pt-2 mt-1 border-t border-slate-800/80">
+        <button onclick="saveTasksTemplate()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-blue-400 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 border border-slate-700/50">
+          <i class="fa-solid fa-floppy-disk"></i> Save Routine
+        </button>
+        <button onclick="loadTasksTemplate()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 border border-slate-700/50">
+          <i class="fa-solid fa-download"></i> Load Routine
+        </button>
+      </div>
     </div>
 
     <!-- GITHUB CONTRIBUTION WEEK SECTION -->
@@ -323,46 +333,14 @@
     // State Management
     let state = {
       tasks: [],
+      savedTasks: [], // For the daily load/save routine
+      currentDate: "", // Used to track midnight resets
       currentPickId: null,
-      selectedPriority: 'medium', // Default priority for new tasks
-      completionHistory: {}, // mapping: "YYYY-MM-DD" -> completed count
+      selectedPriority: 'medium',
+      completionHistory: {}, 
       audioEnabled: true,
-      streak: 0,
-      lastStreakUpdate: null
+      streak: 0
     };
-
-    let lastCheckDateString = "";
-
-    // Load State from LocalStorage
-    function loadState() {
-      const saved = localStorage.getItem('pickflow_state_data_02');
-      if (saved) {
-        try {
-          state = JSON.parse(saved);
-          if (!state.tasks) state.tasks = [];
-          if (!state.completionHistory) state.completionHistory = {};
-          if (state.audioEnabled === undefined) state.audioEnabled = true;
-          if (state.streak === undefined) state.streak = 0;
-        } catch (e) {
-          console.error("Failed to parse saved state", e);
-        }
-      } else {
-        // Clear initially, with standard default active items, NO mock completion history
-        state.tasks = [
-          { id: '1', text: "📝 Draft email updates for the clients", priority: 'low', completed: false, createdAt: new Date() },
-          { id: '2', text: "🏋️ Go to gym and run for 30 minutes", priority: 'high', completed: false, createdAt: new Date() },
-          { id: '3', text: "💻 Refactor Picker app UI styling", priority: 'medium', completed: false, createdAt: new Date() },
-          { id: '4', text: "🍎 Prepare meal planning for the week", priority: 'medium', completed: false, createdAt: new Date() },
-        ];
-        state.completionHistory = {};
-        saveState();
-      }
-      lastCheckDateString = formatDate(new Date());
-    }
-
-    function saveState() {
-      localStorage.setItem('pickflow_state_data_02', JSON.stringify(state));
-    }
 
     // Date formatting helper (YYYY-MM-DD)
     function formatDate(date) {
@@ -372,7 +350,48 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Audio Synthesizer (Zero assets required Web Audio API)
+    // Load State from LocalStorage
+    function loadState() {
+      const saved = localStorage.getItem('pickflow_state_data_03');
+      const todayStr = formatDate(new Date());
+
+      if (saved) {
+        try {
+          state = JSON.parse(saved);
+          if (!state.tasks) state.tasks = [];
+          if (!state.savedTasks) state.savedTasks = [];
+          if (!state.completionHistory) state.completionHistory = {};
+          if (state.audioEnabled === undefined) state.audioEnabled = true;
+          if (state.streak === undefined) state.streak = 0;
+          
+          // Force Midnight Reset if the stored current date doesn't match today!
+          if (state.currentDate !== todayStr) {
+            state.tasks = []; // Clear backlog
+            state.currentDate = todayStr; // Update to new day
+          }
+
+        } catch (e) {
+          console.error("Failed to parse saved state", e);
+        }
+      } else {
+        // First Time User Experience
+        state.tasks = [
+          { id: crypto.randomUUID(), text: "📝 Draft email updates for the clients", priority: 'low', completed: false, createdAt: new Date() },
+          { id: crypto.randomUUID(), text: "🏋️ Go to gym and run for 30 minutes", priority: 'high', completed: false, createdAt: new Date() },
+          { id: crypto.randomUUID(), text: "💻 Refactor Picker app UI styling", priority: 'medium', completed: false, createdAt: new Date() }
+        ];
+        state.currentDate = todayStr;
+        state.savedTasks = [];
+        state.completionHistory = {};
+        saveState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem('pickflow_state_data_03', JSON.stringify(state));
+    }
+
+    // Audio Synthesizer 
     let audioCtx = null;
 
     function playSynthSound(type) {
@@ -477,11 +496,57 @@
       playSynthSound('click');
     }
 
+    // Daily Templates Save & Load System
+    function saveTasksTemplate() {
+      if (state.tasks.length === 0) {
+        showCustomError("No tasks to save! Add tasks first.");
+        return;
+      }
+      
+      // Save all current task properties as a blueprint (ignoring completion state for the blueprint)
+      state.savedTasks = state.tasks.map(t => ({ text: t.text, priority: t.priority }));
+      
+      playSynthSound('click');
+      saveState();
+      showFeedbackToast("Routine template saved successfully!");
+    }
+
+    function loadTasksTemplate() {
+      if (!state.savedTasks || state.savedTasks.length === 0) {
+        showCustomError("No saved routine found. Save your tasks first!");
+        return;
+      }
+
+      // Ensure day is active before injecting
+      checkMidnightRollover();
+
+      // Create fresh task instances from the saved blueprint
+      const loadedTasks = state.savedTasks.map(t => ({
+        id: crypto.randomUUID(),
+        text: t.text,
+        priority: t.priority,
+        completed: false,
+        createdAt: new Date().toISOString()
+      }));
+
+      // Append them to the current tasks list
+      state.tasks = [...loadedTasks, ...state.tasks];
+      
+      playSynthSound('complete');
+      saveState();
+      renderTasks();
+      updateDashboard();
+      
+      showFeedbackToast("Daily routine loaded!");
+    }
+
     function handleAddTask(e) {
       e.preventDefault();
       const input = document.getElementById('taskInput');
       const text = input.value.trim();
       if (!text) return;
+
+      checkMidnightRollover();
 
       const newTask = {
         id: crypto.randomUUID(),
@@ -517,12 +582,10 @@
       updateDashboard();
     }
 
-    // Task Completion logic
     function toggleTask(id) {
       const task = state.tasks.find(t => t.id === id);
       if (!task) return;
 
-      // Make sure date transitions after 12:00 AM are captured accurately on check
       checkMidnightRollover();
       
       task.completed = !task.completed;
@@ -560,26 +623,31 @@
       updateDashboard();
     }
 
-    // Dynamic color determination based on count intensity
     function getGithubColorClass(count) {
       if (!count || count === 0) return 'bg-github-0 border border-slate-700/50';
       if (count === 1) return 'bg-github-1 border border-github-2/30';
       if (count === 2) return 'bg-github-2 border border-github-3/30';
       if (count === 3) return 'bg-github-3 border border-github-4/30';
-      return 'bg-github-4 border border-white/20 text-slate-900'; // level 4 (4+ tasks completed)
+      return 'bg-github-4 border border-white/20 text-slate-900'; 
     }
 
     // Midnight Rollover Detector
     function checkMidnightRollover() {
       const nowStr = formatDate(new Date());
-      if (nowStr !== lastCheckDateString) {
-        lastCheckDateString = nowStr;
-        // Re-evaluate metrics and redraw with pristine colors for the new day
+      if (state.currentDate !== nowStr) {
+        // A new day has started!
+        state.tasks = []; // Clear the backlog!
+        state.currentDate = nowStr; // Update tracked date
+        
+        saveState();
         updateDashboard();
+        renderTasks();
+        
+        showFeedbackToast("It's a new day! Backlog reset automatically.");
       }
     }
 
-    // Generate/render GitHub Contribution Grid (Cleared Initially, updates automatically)
+    // Generate/render GitHub Contribution Grid
     function renderGithubGrid() {
       const container = document.getElementById('weekContainer');
       const template = document.getElementById('dayCellTemplate');
@@ -587,9 +655,8 @@
 
       const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       
-      // Calculate start of current week (Monday)
       const today = new Date();
-      const currentDayIndex = today.getDay(); // 0 is Sunday, 1 is Monday etc.
+      const currentDayIndex = today.getDay(); 
       const daysToMonday = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
       
       const monday = new Date(today);
@@ -602,23 +669,19 @@
         targetDate.setDate(monday.getDate() + idx);
         const dateStr = formatDate(targetDate);
         
-        // Get count completed for that day
         const count = state.completionHistory[dateStr] || 0;
         totalTasksCompletedThisWeek += count;
 
         const clone = template.content.cloneNode(true);
         
-        // Day Label
         const labelEl = clone.querySelector('.day-label');
         labelEl.textContent = label;
         
-        // Highlight Today dynamically
         if (formatDate(today) === dateStr) {
           labelEl.classList.add('text-blue-400', 'font-black');
           labelEl.innerHTML += ' <span class="text-[8px] bg-blue-500/20 px-1 rounded">Today</span>';
         }
 
-        // Setup Box styling & count display
         const box = clone.querySelector('.git-box');
         const colorClass = getGithubColorClass(count);
         box.className = `git-box w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 cursor-pointer relative ${colorClass}`;
@@ -633,7 +696,6 @@
         container.appendChild(clone);
       });
 
-      // Update total completed tasks count label
       document.getElementById('weeklyCount').textContent = `${totalTasksCompletedThisWeek} Task${totalTasksCompletedThisWeek !== 1 ? 's' : ''} Done`;
     }
 
@@ -667,7 +729,7 @@
           <div class="flex flex-col items-center justify-center py-8 text-slate-500 text-center">
             <i class="fa-solid fa-clipboard-list text-3xl mb-2 opacity-40"></i>
             <span class="text-xs font-semibold">Your backlog is completely empty.</span>
-            <span class="text-[10px] mt-0.5">Add tasks above to unlock picker power!</span>
+            <span class="text-[10px] mt-0.5">Add tasks manually or <strong class="text-emerald-400">Load Routine</strong> below!</span>
           </div>
         `;
         return;
@@ -717,7 +779,6 @@
     let isRolling = false;
 
     function startRandomPicker() {
-      // Ensure date integrity when rolling
       checkMidnightRollover();
 
       const eligibleTasks = state.tasks.filter(t => !t.completed);
@@ -953,7 +1014,7 @@
         document.head.appendChild(manifestLink);
 
         const swCode = `
-          const CACHE_NAME = 'pickflow-v2';
+          const CACHE_NAME = 'pickflow-v3';
           self.addEventListener('install', (e) => {
             e.waitUntil(
               caches.open(CACHE_NAME).then((cache) => {
@@ -992,8 +1053,8 @@
       });
     }
 
-    // Set up a structural background checker interval to track midnight rollover smoothly
-    setInterval(checkMidnightRollover, 60000); // Check once per minute
+    // Set interval to check for Midnight Date changes while app is open!
+    setInterval(checkMidnightRollover, 60000);
 
     // INITIALIZATION
     window.onload = function() {
