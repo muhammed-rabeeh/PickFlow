@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PickFlow - Ultimate Task Picker & Productivity Tracker</title>
+  <title>PickFlow - Ultimate Task Picker & Planner</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,11 +13,7 @@
         extend: {
           colors: {
             github: {
-              0: '#1e293b', // slate-800
-              1: '#0e4429', // L1 green
-              2: '#006d32', // L2 green
-              3: '#26a641', // L3 green
-              4: '#39d353', // L4 green (brightest)
+              0: '#1e293b', 1: '#0e4429', 2: '#006d32', 3: '#26a641', 4: '#39d353',
             }
           }
         }
@@ -25,13 +21,13 @@
     }
   </script>
 
-  <!-- Google Fonts & FontAwesome Icons -->
+  <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Canvas Confetti Library -->
+  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -44,23 +40,12 @@
       -webkit-tap-highlight-color: transparent;
     }
     
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-    /* Premium scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(30, 41, 59, 0.5);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.3);
-      border-radius: 99px;
-    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 99px; }
     
-    /* Glassmorphic Card Styling */
     .glass-card {
       background: rgba(30, 41, 59, 0.45);
       backdrop-filter: blur(12px);
@@ -78,16 +63,12 @@
       box-shadow: 0 0 15px rgba(59, 130, 246, 0.35);
     }
 
-    /* Selection Highlighting Animation */
     @keyframes pulse-border {
       0%, 100% { border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
       50% { border-color: rgba(57, 211, 83, 1); box-shadow: 0 0 25px rgba(57, 211, 83, 0.6); }
     }
-    .animating-picker {
-      animation: pulse-border 1.5s infinite;
-    }
+    .animating-picker { animation: pulse-border 1.5s infinite; }
 
-    /* Glow effect */
     .glow-btn {
       position: relative;
       overflow: hidden;
@@ -100,28 +81,34 @@
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       transition: all 0.6s ease;
     }
-    .glow-btn:hover::after {
-      left: 100%;
+    .glow-btn:hover::after { left: 100%; }
+
+    .nav-active {
+      color: #3b82f6 !important;
+      background: rgba(59, 130, 246, 0.1) !important;
     }
+    
+    /* Smooth hour bar transition */
+    .progress-fill { transition: width 0.5s ease-out; }
   </style>
 </head>
-<body class="p-4 sm:p-6 flex justify-center items-start overflow-y-auto">
+<body class="flex justify-center items-start overflow-y-auto w-full">
 
-  <div class="w-full max-w-md flex flex-col gap-5 pb-10">
+  <!-- WRAPPER FOR BOTH VIEWS -->
+  <div class="w-full max-w-md flex flex-col p-4 sm:p-6 pb-28 min-h-screen relative">
     
     <!-- HEADER -->
-    <header class="flex justify-between items-center py-2">
+    <header class="flex justify-between items-center py-2 mb-5">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
           <i class="fa-solid fa-wand-magic-sparkles text-lg text-white"></i>
         </div>
         <div>
           <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">PickFlow</h1>
-          <p class="text-xs text-slate-400 font-medium">Randomizer & Tracker</p>
+          <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Productivity Suite</p>
         </div>
       </div>
       
-      <!-- Stats / Settings -->
       <div class="flex gap-2">
         <button id="pwaInstallBtn" class="hidden text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
           <i class="fa-solid fa-circle-down"></i> Install
@@ -132,173 +119,216 @@
       </div>
     </header>
 
-    <!-- METRICS PANEL -->
-    <div class="glass-card rounded-2xl p-4 grid grid-cols-3 gap-2 text-center">
-      <div class="border-r border-slate-700/50">
-        <span class="block text-xs text-slate-400">Todo Tasks</span>
-        <span id="statTodo" class="text-xl font-bold text-blue-400">0</span>
-      </div>
-      <div class="border-r border-slate-700/50">
-        <span class="block text-xs text-slate-400">Completed Today</span>
-        <span id="statCompleted" class="text-xl font-bold text-emerald-400">0</span>
-      </div>
-      <div>
-        <span class="block text-xs text-slate-400">Weekly Streak</span>
-        <span id="statStreak" class="text-xl font-bold text-amber-400">0d</span>
-      </div>
-    </div>
-
-    <!-- MAIN RANDOMIZER WHEEL / DISCOVERY -->
-    <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden group">
-      <div class="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <span class="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-3">Random Selection Wheel</span>
-      
-      <!-- Roulette Viewport -->
-      <div id="pickerBox" class="w-full h-24 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-center relative overflow-hidden my-4 px-4">
-        <div class="absolute inset-y-0 left-0 w-1 bg-gradient-to-r from-blue-500 to-transparent z-10 pointer-events-none"></div>
-        <div class="absolute inset-y-0 right-0 w-1 bg-gradient-to-l from-blue-500 to-transparent z-10 pointer-events-none"></div>
-        
-        <div id="pickerText" class="text-lg sm:text-xl font-bold text-slate-200 text-center tracking-wide truncate max-w-full transition-transform duration-100">
-          <span class="text-slate-500 italic"><i class="fa-solid fa-list-check mr-2"></i>Add tasks below to pick</span>
+    <!-- ============================================== -->
+    <!-- VIEW 1: RANDOM PICKER (ORIGINAL FEATURE)       -->
+    <!-- ============================================== -->
+    <div id="viewPicker" class="flex flex-col gap-5">
+      <!-- METRICS PANEL -->
+      <div class="glass-card rounded-2xl p-4 grid grid-cols-3 gap-2 text-center">
+        <div class="border-r border-slate-700/50">
+          <span class="block text-xs text-slate-400">Todo Tasks</span>
+          <span id="statTodo" class="text-xl font-bold text-blue-400">0</span>
+        </div>
+        <div class="border-r border-slate-700/50">
+          <span class="block text-xs text-slate-400">Completed Today</span>
+          <span id="statCompleted" class="text-xl font-bold text-emerald-400">0</span>
+        </div>
+        <div>
+          <span class="block text-xs text-slate-400">Weekly Streak</span>
+          <span id="statStreak" class="text-xl font-bold text-amber-400">0d</span>
         </div>
       </div>
 
-      <!-- Action Button -->
-      <button onclick="startRandomPicker()" id="chooseBtn" class="glow-btn w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-lg active:scale-95 transition transform duration-150">
-        <i class="fa-solid fa-shuffle"></i>
-        <span>CHOOSE A TASK</span>
-      </button>
-    </div>
-
-    <!-- ADD TASK INTERFACE -->
-    <div class="glass-card rounded-2xl p-4">
-      <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-        <i class="fa-solid fa-plus text-blue-400"></i> Add New Task
-      </h2>
-      <form id="taskForm" onsubmit="handleAddTask(event)" class="flex flex-col gap-3">
-        <div class="flex gap-2">
-          <input type="text" id="taskInput" placeholder="What's your next priority task?" required maxlength="80"
-                 class="glass-input flex-1 px-4 py-3 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
-          <button type="submit" class="w-12 h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-blue-500/20">
-            <i class="fa-solid fa-plus text-lg"></i>
-          </button>
-        </div>
+      <!-- MAIN RANDOMIZER WHEEL -->
+      <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden group">
+        <div class="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <span class="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-3">Random Selection Wheel</span>
         
-        <!-- Quick Settings (Priority / Category) -->
-        <div class="flex items-center justify-between gap-2 mt-1">
-          <div class="flex gap-1.5" id="prioritySelector">
-            <button type="button" onclick="setPriority('low')" data-val="low" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800">Low</button>
-            <button type="button" onclick="setPriority('medium')" data-val="medium" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 transition">Medium</button>
-            <button type="button" onclick="setPriority('high')" data-val="high" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800">High</button>
+        <div id="pickerBox" class="w-full h-24 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-center relative overflow-hidden my-4 px-4">
+          <div class="absolute inset-y-0 left-0 w-1 bg-gradient-to-r from-blue-500 to-transparent z-10 pointer-events-none"></div>
+          <div class="absolute inset-y-0 right-0 w-1 bg-gradient-to-l from-blue-500 to-transparent z-10 pointer-events-none"></div>
+          <div id="pickerText" class="text-lg sm:text-xl font-bold text-slate-200 text-center tracking-wide truncate max-w-full transition-transform duration-100">
+            <span class="text-slate-500 italic"><i class="fa-solid fa-list-check mr-2"></i>Add tasks below to pick</span>
           </div>
-          <span class="text-xs text-slate-500 italic">Sets task importance</span>
         </div>
-      </form>
-    </div>
 
-    <!-- TASK LIST SECTION -->
-    <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
-      <div class="flex justify-between items-center mb-1">
-        <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-emerald-400"></i> Task Backlog
+        <button onclick="startRandomPicker()" id="chooseBtn" class="glow-btn w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-lg active:scale-95 transition transform duration-150">
+          <i class="fa-solid fa-shuffle"></i>
+          <span>CHOOSE A TASK</span>
+        </button>
+      </div>
+
+      <!-- ADD TASK INTERFACE -->
+      <div class="glass-card rounded-2xl p-4">
+        <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-plus text-blue-400"></i> Add New Task
         </h2>
-        <div class="flex items-center gap-3">
+        <form id="taskForm" onsubmit="handleAddTask(event)" class="flex flex-col gap-3">
+          <div class="flex gap-2">
+            <input type="text" id="taskInput" placeholder="What's your next priority task?" required maxlength="80"
+                   class="glass-input flex-1 px-4 py-3 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+            <button type="submit" class="w-12 h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-blue-500/20">
+              <i class="fa-solid fa-plus text-lg"></i>
+            </button>
+          </div>
+          <div class="flex items-center justify-between gap-2 mt-1">
+            <div class="flex gap-1.5" id="prioritySelector">
+              <button type="button" onclick="setPriority('low')" data-val="low" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800">Low</button>
+              <button type="button" onclick="setPriority('medium')" data-val="medium" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 transition">Medium</button>
+              <button type="button" onclick="setPriority('high')" data-val="high" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800">High</button>
+            </div>
+            <span class="text-xs text-slate-500 italic">Sets task importance</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- TASK LIST SECTION -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
+        <div class="flex justify-between items-center mb-1">
+          <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-emerald-400"></i> Task Backlog
+          </h2>
           <button onclick="clearCompletedTasks()" class="text-xs text-slate-400 hover:text-red-400 transition flex items-center gap-1">
             <i class="fa-solid fa-broom"></i> Clear Complete
           </button>
         </div>
+        <div class="flex items-center justify-between py-1 border-b border-slate-800 pb-2">
+          <span class="text-xs text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-gears"></i> Auto-remove from picker upon completion:
+          </span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="autoRemoveToggle" class="sr-only peer" checked>
+            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+          </label>
+        </div>
+        <div id="taskList" class="max-h-60 overflow-y-auto flex flex-col gap-2 pr-1 min-h-[100px]"></div>
+        
+        <div class="flex gap-2 pt-2 mt-1 border-t border-slate-800/80">
+          <button onclick="saveTasksTemplate()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-blue-400 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 border border-slate-700/50">
+            <i class="fa-solid fa-floppy-disk"></i> Save Routine
+          </button>
+          <button onclick="loadTasksTemplate()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 border border-slate-700/50">
+            <i class="fa-solid fa-download"></i> Load Routine
+          </button>
+        </div>
       </div>
 
-      <!-- Quick Filtering & Automation Toggle -->
-      <div class="flex items-center justify-between py-1 border-b border-slate-800 pb-2">
-        <span class="text-xs text-slate-400 flex items-center gap-1.5">
-          <i class="fa-solid fa-gears"></i> Auto-remove from picker upon completion:
-        </span>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" id="autoRemoveToggle" class="sr-only peer" checked>
-          <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-        </label>
-      </div>
-
-      <!-- Scrollable Task List -->
-      <div id="taskList" class="max-h-60 overflow-y-auto flex flex-col gap-2 pr-1 min-h-[100px]">
-        <!-- Dynamic Tasks will build here -->
-      </div>
-
-      <!-- Save / Load Day Templates -->
-      <div class="flex gap-2 pt-2 mt-1 border-t border-slate-800/80">
-        <button onclick="saveTasksTemplate()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-blue-400 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 border border-slate-700/50">
-          <i class="fa-solid fa-floppy-disk"></i> Save Routine
-        </button>
-        <button onclick="loadTasksTemplate()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 border border-slate-700/50">
-          <i class="fa-solid fa-download"></i> Load Routine
-        </button>
+      <!-- GITHUB CONTRIBUTION WEEK SECTION -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
+        <div class="flex justify-between items-center mb-1">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+              <i class="fa-brands fa-github text-slate-200"></i> Weekly Contribution Grid
+            </h2>
+            <p class="text-[10px] text-slate-400">Intensity changes dynamically as you finish tasks today!</p>
+          </div>
+          <span id="weeklyCount" class="text-xs bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold">0 Tasks Done</span>
+        </div>
+        <div class="grid grid-cols-7 gap-3 mt-1">
+          <template id="dayCellTemplate">
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-[10px] font-medium text-slate-400 uppercase tracking-wider day-label">Mon</span>
+              <div class="git-box w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 cursor-pointer relative" onclick="triggerConfettiOnDayBox()">
+                <span class="text-[10px] font-bold text-slate-200 count-badge">0</span>
+              </div>
+            </div>
+          </template>
+          <div id="weekContainer" class="col-span-7 grid grid-cols-7 gap-2"></div>
+        </div>
+        <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-800/80 pt-2.5 mt-1">
+          <span>Less Productive</span>
+          <div class="flex gap-1 items-center">
+            <div class="w-2.5 h-2.5 rounded-sm bg-github-0 border border-slate-700/50"></div>
+            <div class="w-2.5 h-2.5 rounded-sm bg-github-1"></div>
+            <div class="w-2.5 h-2.5 rounded-sm bg-github-2"></div>
+            <div class="w-2.5 h-2.5 rounded-sm bg-github-3"></div>
+            <div class="w-2.5 h-2.5 rounded-sm bg-github-4"></div>
+          </div>
+          <span>More Productive</span>
+        </div>
       </div>
     </div>
 
-    <!-- GITHUB CONTRIBUTION WEEK SECTION -->
-    <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
-      <div class="flex justify-between items-center mb-1">
-        <div>
-          <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
-            <i class="fa-brands fa-github text-slate-200"></i> Weekly Contribution Grid
-          </h2>
-          <p class="text-[10px] text-slate-400">Intensity changes dynamically as you finish tasks today!</p>
-        </div>
-        <span id="weeklyCount" class="text-xs bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold">0 Tasks Done</span>
-      </div>
 
-      <!-- GitHub Contribution Grid -->
-      <div class="grid grid-cols-7 gap-3 mt-1">
-        <template id="dayCellTemplate">
-          <div class="flex flex-col items-center gap-2">
-            <span class="text-[10px] font-medium text-slate-400 uppercase tracking-wider day-label">Mon</span>
-            <!-- Git Contribution Square -->
-            <div class="git-box w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 cursor-pointer relative" onclick="triggerConfettiOnDayBox()">
-              <span class="text-[10px] font-bold text-slate-200 count-badge">0</span>
+    <!-- ============================================== -->
+    <!-- VIEW 2: HOURLY DAY PLANNER                     -->
+    <!-- ============================================== -->
+    <div id="viewPlanner" class="hidden flex-col gap-5 w-full">
+      
+      <!-- GAMIFICATION RANK CARD -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden shadow-lg border-emerald-500/30">
+        <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="flex justify-between items-center mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-white text-xl shadow-lg shadow-emerald-500/40 font-black border-2 border-slate-900" id="levelIconBadge">
+              1
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest leading-none">Productivity Rank</span>
+              <span class="text-xl font-black text-white leading-tight">Level <span id="rankLevelDisplay">1</span></span>
             </div>
           </div>
-        </template>
-        <div id="weekContainer" class="col-span-7 grid grid-cols-7 gap-2">
-          <!-- Dynamic Days Injected Here -->
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Total Credits</span>
+            <span class="text-xl font-mono font-bold text-amber-400" id="totalCreditsDisplay">0 <i class="fa-solid fa-coins text-sm ml-1"></i></span>
+          </div>
+        </div>
+
+        <!-- Next Level Progress Bar -->
+        <div class="w-full">
+          <div class="flex justify-between text-[10px] font-medium text-slate-400 mb-1">
+            <span>Progress to Next Rank</span>
+            <span id="rankProgressText">0 / 2000 XP</span>
+          </div>
+          <div class="w-full bg-slate-900 rounded-full h-2.5 border border-slate-700/50 overflow-hidden">
+            <div id="rankProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2.5 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+          </div>
         </div>
       </div>
-      
-      <!-- Color Guide -->
-      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-800/80 pt-2.5 mt-1">
-        <span>Less Productive</span>
-        <div class="flex gap-1 items-center">
-          <div class="w-2.5 h-2.5 rounded-sm bg-github-0 border border-slate-700/50"></div>
-          <div class="w-2.5 h-2.5 rounded-sm bg-github-1"></div>
-          <div class="w-2.5 h-2.5 rounded-sm bg-github-2"></div>
-          <div class="w-2.5 h-2.5 rounded-sm bg-github-3"></div>
-          <div class="w-2.5 h-2.5 rounded-sm bg-github-4"></div>
-        </div>
-        <span>More Productive</span>
+
+      <!-- RULES / INFO -->
+      <div class="text-[10px] text-slate-400 text-center px-4 -mt-2 mb-1 leading-snug">
+        Schedule tasks per hour. Earn <strong class="text-emerald-400">+1 Credit</strong> per active minute. Miss a scheduled task entirely? Lose <strong class="text-red-400">-60 Credits</strong>. Plan wisely!
+      </div>
+
+      <!-- HOURLY LIST CONTAINER -->
+      <div class="glass-card rounded-2xl p-3 flex flex-col gap-2 relative" id="hourlyListContainer">
+        <!-- Dynamic Hourly Blocks inserted here -->
       </div>
     </div>
   </div>
 
-  <!-- CONGRATULATIONS CUSTOM MODAL -->
+  <!-- FIXED BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 left-0 w-full z-40 pb-safe bg-slate-950/90 backdrop-blur-xl border-t border-slate-800">
+    <div class="max-w-md mx-auto px-4 flex justify-between">
+      <button onclick="switchTab('picker')" id="navPickerBtn" class="flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition nav-active group">
+        <i class="fa-solid fa-wand-magic-sparkles text-xl group-active:scale-90 transition-transform"></i>
+        <span class="text-[10px] font-bold tracking-wide">Picker</span>
+      </button>
+      <button onclick="switchTab('planner')" id="navPlannerBtn" class="flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition group hover:text-blue-400">
+        <i class="fa-regular fa-clock text-xl group-active:scale-90 transition-transform"></i>
+        <span class="text-[10px] font-bold tracking-wide">Day Plan</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================== -->
+  <!-- MODAL: PICKER CONGRATS / TIMER                 -->
+  <!-- ============================================== -->
   <div id="modalOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="glass-card rounded-3xl p-6 w-full max-w-sm text-center border-slate-700/50 transform scale-90 opacity-0 transition-all duration-300 flex flex-col items-center shadow-2xl relative overflow-hidden" id="modalCard">
-      <!-- Success Ring glow -->
       <div class="absolute -top-16 -left-16 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <!-- Crown / Celebration Icon -->
       <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-3xl mb-3 shadow-lg shadow-emerald-500/10 animate-bounce">
         <i class="fa-solid fa-trophy"></i>
       </div>
-      
       <h3 class="text-xs text-emerald-400 uppercase tracking-widest font-bold mb-1">Task Picked Successfully!</h3>
       <h2 class="text-2xl font-black text-white tracking-tight mb-4">Congratulations!</h2>
       
-      <!-- Picked Task Output Card -->
       <div class="w-full bg-slate-950/80 border border-slate-800 rounded-2xl p-4 mb-3 shadow-inner">
         <span id="modalTaskPriority" class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 inline-block mb-2">Medium Priority</span>
-        <p id="modalTaskText" class="text-base font-bold text-slate-100 break-words leading-snug">Review sprint designs and draft feedback docs</p>
+        <p id="modalTaskText" class="text-base font-bold text-slate-100 break-words leading-snug"></p>
       </div>
 
       <!-- IN-MODAL FOCUS TIMER -->
@@ -309,41 +339,43 @@
           </div>
           <div class="flex flex-col items-start">
             <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Focus Timer</span>
-            <span id="timerDisplay" class="text-2xl font-mono font-black text-slate-100 leading-none">30:00</span>
+            <span id="pickerTimerDisplay" class="text-2xl font-mono font-black text-slate-100 leading-none">30:00</span>
           </div>
         </div>
-        <button onclick="toggleTimer()" id="timerToggleBtn" class="w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 transition active:scale-95">
-          <i class="fa-solid fa-play text-xl ml-0.5" id="timerIcon"></i>
+        <button onclick="togglePickerTimer()" id="pickerTimerToggleBtn" class="w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 transition active:scale-95">
+          <i class="fa-solid fa-play text-xl ml-0.5" id="pickerTimerIcon"></i>
         </button>
       </div>
 
       <div class="flex flex-col gap-2 w-full">
-        <!-- Mark Active Task button -->
-        <button onclick="handleModalAction('complete')" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold rounded-xl flex items-center justify-center gap-2 transition duration-150 shadow-lg shadow-emerald-500/20 text-sm">
+        <button onclick="handleModalAction('complete')" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 text-sm">
           <i class="fa-solid fa-check-double"></i> Mark Completed Now!
         </button>
-        
         <div class="grid grid-cols-2 gap-2">
-          <button onclick="handleModalAction('keep')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-semibold rounded-lg text-xs transition">
-            <i class="fa-solid fa-list-check mr-1.5"></i> Keep in Backlog
+          <button onclick="handleModalAction('keep')" class="py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-semibold rounded-lg text-xs transition">
+            <i class="fa-solid fa-list-check mr-1"></i> Keep Backlog
           </button>
-          <button onclick="handleModalAction('close')" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-semibold rounded-lg text-xs transition">
-            <i class="fa-solid fa-times mr-1.5"></i> Close Picker
+          <button onclick="handleModalAction('close')" class="py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-semibold rounded-lg text-xs transition">
+            <i class="fa-solid fa-times mr-1"></i> Close
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- INLINE AUDIO NOTIFICATIONS -->
   <div class="hidden" id="audioContainer"></div>
 
-  <!-- CORE PRODUCTIVITY SCRIPT -->
   <script>
-    const DEFAULT_TIMER_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
-    let localTimerInterval = null;
+    // ==========================================
+    // GLOBALS & STATE INITIALIZATION
+    // ==========================================
+    const DEFAULT_TIMER_MS = 30 * 60 * 1000;
+    const PLANNER_HOUR_LIMIT_MS = 60 * 60 * 1000;
+    const CREDITS_PER_LEVEL = 2000;
+    
+    let localPickerInterval = null;
+    let localPlannerInterval = null;
 
-    // State Management
     let state = {
       tasks: [],
       savedTasks: [], 
@@ -353,15 +385,26 @@
       completionHistory: {}, 
       audioEnabled: true,
       streak: 0,
-      timer: {
+      pickerTimer: {
         activeTaskId: null,
         isRunning: false,
         targetTime: null,
         remainingTime: DEFAULT_TIMER_MS
+      },
+      // New Planner Gamification State
+      planner: {
+        hours: {}, // { "6": { text: "Gym", productiveMs: 0, locked: false } }
+        activeTimer: {
+          hour: null,
+          lastTickMs: null,
+          isRunning: false
+        }
+      },
+      gamification: {
+        credits: 0
       }
     };
 
-    // Date formatting helper (YYYY-MM-DD)
     function formatDate(date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -369,50 +412,7 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Load State from LocalStorage
-    function loadState() {
-      const saved = localStorage.getItem('pickflow_state_data_05');
-      const todayStr = formatDate(new Date());
-
-      if (saved) {
-        try {
-          state = JSON.parse(saved);
-          if (!state.tasks) state.tasks = [];
-          if (!state.savedTasks) state.savedTasks = [];
-          if (!state.completionHistory) state.completionHistory = {};
-          if (state.audioEnabled === undefined) state.audioEnabled = true;
-          if (state.streak === undefined) state.streak = 0;
-          if (!state.timer) {
-            state.timer = { activeTaskId: null, isRunning: false, targetTime: null, remainingTime: DEFAULT_TIMER_MS };
-          }
-          
-          if (state.currentDate !== todayStr) {
-            state.tasks = []; 
-            state.currentDate = todayStr; 
-          }
-        } catch (e) {
-          console.error("Failed to parse saved state", e);
-        }
-      } else {
-        state.tasks = [
-          { id: crypto.randomUUID(), text: "📝 Draft email updates for the clients", priority: 'low', completed: false, createdAt: new Date() },
-          { id: crypto.randomUUID(), text: "🏋️ Go to gym and run for 30 minutes", priority: 'high', completed: false, createdAt: new Date() },
-          { id: crypto.randomUUID(), text: "💻 Refactor Picker app UI styling", priority: 'medium', completed: false, createdAt: new Date() }
-        ];
-        state.currentDate = todayStr;
-      }
-
-      // Check for Background Timer Progress Upon Loading
-      handleBackgroundTimerRestoration();
-    }
-
-    function saveState() {
-      localStorage.setItem('pickflow_state_data_05', JSON.stringify(state));
-    }
-
-    // --- Timer Logic (Background & UI) ---
-    
-    function formatTime(ms) {
+    function formatTimeDisplay(ms) {
       if (ms <= 0) return "00:00";
       const totalSeconds = Math.ceil(ms / 1000);
       const m = Math.floor(totalSeconds / 60);
@@ -420,220 +420,110 @@
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    function updateTimerUI(ms) {
-      document.getElementById('timerDisplay').textContent = formatTime(ms);
-      const icon = document.getElementById('timerIcon');
-      const btn = document.getElementById('timerToggleBtn');
-
-      if (state.timer.isRunning) {
-        icon.className = "fa-solid fa-pause text-xl";
-        icon.classList.remove('ml-0.5'); // Remove play icon offset
-        btn.className = "w-12 h-12 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 flex items-center justify-center shadow-lg shadow-amber-500/20 transition active:scale-95";
-      } else {
-        icon.className = "fa-solid fa-play text-xl ml-0.5";
-        btn.className = "w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 transition active:scale-95";
-      }
-    }
-
-    function toggleTimer() {
-      if (state.timer.isRunning) {
-        // Pause it
-        state.timer.isRunning = false;
-        state.timer.remainingTime = state.timer.targetTime - Date.now();
-        state.timer.targetTime = null;
-        clearInterval(localTimerInterval);
-        playSynthSound('click');
-      } else {
-        // Start / Resume it
-        state.timer.isRunning = true;
-        state.timer.targetTime = Date.now() + state.timer.remainingTime;
-        playSynthSound('tick');
-        startTimerLoop();
-      }
-      updateTimerUI(state.timer.remainingTime);
-      saveState();
-    }
-
-    function startTimerLoop() {
-      if (localTimerInterval) clearInterval(localTimerInterval);
-      
-      localTimerInterval = setInterval(() => {
-        const left = state.timer.targetTime - Date.now();
-        if (left <= 0) {
-          // Timer finished naturally!
-          clearInterval(localTimerInterval);
-          handleTimerComplete();
-        } else {
-          updateTimerUI(left);
-        }
-      }, 200);
-    }
-
-    function handleTimerComplete() {
-      updateTimerUI(0);
-      
-      const taskId = state.timer.activeTaskId;
-      clearActiveTimer(); 
-      
-      // Complete the task automatically
-      if (taskId) {
-        markTaskComplete(taskId, true);
-        showFeedbackToast("Time is up! Task auto-completed.");
-      }
-      
-      // Close the modal if it's open
-      closeCongratsModal();
-    }
-
-    function clearActiveTimer() {
-      if (localTimerInterval) clearInterval(localTimerInterval);
-      state.timer = {
-        activeTaskId: null,
-        isRunning: false,
-        targetTime: null,
-        remainingTime: DEFAULT_TIMER_MS
-      };
-      saveState();
-    }
-
-    // Handles the timer if the user closed the app and came back
-    function handleBackgroundTimerRestoration() {
-      const t = state.timer;
-      if (!t || !t.activeTaskId) return;
-
-      const taskExists = state.tasks.find(x => x.id === t.activeTaskId && !x.completed);
-      
-      if (!taskExists) {
-        // Task was deleted or already completed elsewhere, clean up
-        clearActiveTimer();
-        return;
-      }
-
-      if (t.isRunning && t.targetTime) {
-        const left = t.targetTime - Date.now();
-        if (left <= 0) {
-          // User was away and time expired
-          markTaskComplete(t.activeTaskId, true);
-          showFeedbackToast(`Welcome back! Your task "${taskExists.text}" was auto-completed while you were away.`);
-          clearActiveTimer();
-        } else {
-          // Still running, reopen the modal
-          state.currentPickId = t.activeTaskId;
-          populateModalDetails(taskExists);
-          updateTimerUI(left);
-          startTimerLoop();
-          openCongratsModal();
-        }
-      } else if (!t.isRunning && t.remainingTime > 0 && t.remainingTime < DEFAULT_TIMER_MS) {
-        // It was paused midway. Re-open modal
-        state.currentPickId = t.activeTaskId;
-        populateModalDetails(taskExists);
-        updateTimerUI(t.remainingTime);
-        openCongratsModal();
-      }
-    }
-
-    // Direct completion logic without toggling UI instantly
-    function markTaskComplete(id, auto = false) {
-      const task = state.tasks.find(t => t.id === id);
-      if (!task || task.completed) return;
-
-      checkMidnightRollover();
-      task.completed = true;
-      
+    function loadState() {
+      const saved = localStorage.getItem('pickflow_v6_data');
       const todayStr = formatDate(new Date());
-      state.completionHistory[todayStr] = (state.completionHistory[todayStr] || 0) + 1;
-      
-      if (auto || !state.audioEnabled) {
-         playSynthSound('congrats');
-         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          state = { ...state, ...parsed };
+          
+          if (!state.planner) state.planner = { hours: {}, activeTimer: { hour: null, lastTickMs: null, isRunning: false } };
+          if (!state.gamification) state.gamification = { credits: 0 };
+          if (!state.pickerTimer) state.pickerTimer = { activeTaskId: null, isRunning: false, targetTime: null, remainingTime: DEFAULT_TIMER_MS };
+
+          // MIDNIGHT RESET
+          if (state.currentDate !== todayStr) {
+            state.tasks = []; 
+            state.planner.hours = {}; // Reset Day Planner
+            state.planner.activeTimer = { hour: null, lastTickMs: null, isRunning: false };
+            state.currentDate = todayStr; 
+          }
+        } catch (e) {
+          console.error("Failed to parse saved state", e);
+        }
+      } else {
+        // First time initialization
+        state.currentDate = todayStr;
+        state.tasks = [
+          { id: crypto.randomUUID(), text: "📝 Draft email updates", priority: 'medium', completed: false, createdAt: new Date() }
+        ];
       }
 
-      const autoRemove = document.getElementById('autoRemoveToggle').checked;
-      if (autoRemove) {
-        setTimeout(() => {
-          state.tasks = state.tasks.filter(t => t.id !== id);
-          saveState();
-          renderTasks();
-          updateDashboard();
-        }, auto ? 0 : 800);
-      }
-
-      saveState();
-      renderTasks();
-      updateDashboard();
+      handleBackgroundPickerTimerRestoration();
+      handleBackgroundPlannerRestoration();
     }
 
+    function saveState() {
+      localStorage.setItem('pickflow_v6_data', JSON.stringify(state));
+    }
 
-    // --- Audio Synthesizer --- 
+    // ==========================================
+    // AUDIO ENGINE
+    // ==========================================
     let audioCtx = null;
-
     function playSynthSound(type) {
       if (!state.audioEnabled) return;
       try {
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
 
         const osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         osc.connect(gainNode);
         gainNode.connect(audioCtx.destination);
 
+        const now = audioCtx.currentTime;
+
         if (type === 'tick') {
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.08);
-          gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
-          gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.08);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.08);
-        } else if (type === 'congrats') {
-          const now = audioCtx.currentTime;
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+          gainNode.gain.setValueAtTime(0.12, now);
+          gainNode.gain.linearRampToValueAtTime(0, now + 0.08);
+          osc.start(); osc.stop(now + 0.08);
+        } else if (type === 'congrats' || type === 'levelup') {
           osc.type = 'sine';
           osc.frequency.setValueAtTime(260, now);
           osc.frequency.exponentialRampToValueAtTime(520, now + 0.15);
           osc.frequency.exponentialRampToValueAtTime(780, now + 0.3);
           gainNode.gain.setValueAtTime(0.15, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-          osc.start();
-          osc.stop(now + 0.35);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + (type==='levelup'?0.6:0.35));
+          osc.start(); osc.stop(now + 0.6);
 
           const osc2 = audioCtx.createOscillator();
           const gainNode2 = audioCtx.createGain();
           osc2.type = 'triangle';
-          osc2.connect(gainNode2);
-          gainNode2.connect(audioCtx.destination);
+          osc2.connect(gainNode2); gainNode2.connect(audioCtx.destination);
           osc2.frequency.setValueAtTime(330, now);
           osc2.frequency.exponentialRampToValueAtTime(660, now + 0.2);
           osc2.frequency.exponentialRampToValueAtTime(990, now + 0.35);
           gainNode2.gain.setValueAtTime(0.08, now);
-          gainNode2.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-          osc2.start();
-          osc2.stop(now + 0.45);
+          gainNode2.gain.exponentialRampToValueAtTime(0.01, now + (type==='levelup'?0.7:0.45));
+          osc2.start(); osc2.stop(now + 0.7);
         } else if (type === 'complete') {
-          const now = audioCtx.currentTime;
           osc.type = 'sine';
           osc.frequency.setValueAtTime(580, now);
           osc.frequency.setValueAtTime(880, now + 0.1);
           gainNode.gain.setValueAtTime(0.15, now);
           gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-          osc.start();
-          osc.stop(now + 0.3);
+          osc.start(); osc.stop(now + 0.3);
         } else if (type === 'click') {
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-          gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
-          gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.05);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.05);
+          osc.frequency.setValueAtTime(150, now);
+          gainNode.gain.setValueAtTime(0.05, now);
+          gainNode.gain.linearRampToValueAtTime(0, now + 0.05);
+          osc.start(); osc.stop(now + 0.05);
+        } else if (type === 'error') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(200, now);
+          osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+          gainNode.gain.setValueAtTime(0.1, now);
+          gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+          osc.start(); osc.stop(now + 0.2);
         }
-      } catch (e) {
-        console.warn('Audio synthesis block failed.', e);
-      }
+      } catch (e) {}
     }
 
     function toggleAudio() {
@@ -650,19 +540,464 @@
       saveState();
     }
 
+    // ==========================================
+    // TAB NAVIGATION
+    // ==========================================
+    function switchTab(tabId) {
+      playSynthSound('click');
+      const vPicker = document.getElementById('viewPicker');
+      const vPlanner = document.getElementById('viewPlanner');
+      const nPicker = document.getElementById('navPickerBtn');
+      const nPlanner = document.getElementById('navPlannerBtn');
+
+      // Reset styles
+      nPicker.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition group hover:text-blue-400";
+      nPlanner.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition group hover:text-blue-400";
+      
+      if (tabId === 'picker') {
+        vPlanner.classList.add('hidden');
+        vPicker.classList.remove('hidden');
+        vPicker.classList.add('flex');
+        nPicker.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition nav-active group";
+      } else {
+        vPicker.classList.add('hidden');
+        vPicker.classList.remove('flex');
+        vPlanner.classList.remove('hidden');
+        vPlanner.classList.add('flex');
+        nPlanner.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition nav-active group";
+        renderPlanner();
+      }
+    }
+
+    // ==========================================
+    // TOAST SYSTEM
+    // ==========================================
+    function showFeedbackToast(msg, type = "info") {
+      const toast = document.createElement('div');
+      let icon = "fa-circle-info text-blue-400";
+      let bg = "bg-slate-900 border-slate-800 text-slate-200";
+      
+      if(type === "error") { icon = "fa-triangle-exclamation text-red-400"; bg = "bg-red-950 border-red-800 text-red-200"; }
+      else if (type === "success") { icon = "fa-star text-amber-400"; bg = "bg-emerald-950 border-emerald-800 text-emerald-200"; }
+      else if (type === "penalty") { icon = "fa-skull text-red-400"; bg = "bg-slate-900 border-red-900/50 text-red-300"; }
+
+      toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] border shadow-2xl px-5 py-3 rounded-xl text-xs font-bold text-center flex items-center gap-2 animate-bounce ${bg}`;
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${msg}`;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 4000);
+    }
+
+    // ==========================================
+    // HOURLY PLANNER & GAMIFICATION LOGIC
+    // ==========================================
+    function getLevel() {
+      return Math.floor(Math.max(0, state.gamification.credits) / CREDITS_PER_LEVEL) + 1;
+    }
+
+    function updateGamificationUI() {
+      const credits = Math.max(0, state.gamification.credits);
+      const lvl = getLevel();
+      const progress = credits % CREDITS_PER_LEVEL;
+      const pct = (progress / CREDITS_PER_LEVEL) * 100;
+
+      document.getElementById('rankLevelDisplay').textContent = lvl;
+      document.getElementById('levelIconBadge').textContent = lvl;
+      document.getElementById('totalCreditsDisplay').innerHTML = `${credits} <i class="fa-solid fa-coins text-xs ml-1 opacity-80"></i>`;
+      document.getElementById('rankProgressText').textContent = `${progress} / ${CREDITS_PER_LEVEL} XP`;
+      document.getElementById('rankProgressBar').style.width = `${pct}%`;
+    }
+
+    function renderPlanner() {
+      const container = document.getElementById('hourlyListContainer');
+      container.innerHTML = '';
+      updateGamificationUI();
+
+      const currentRealHour = new Date().getHours();
+
+      for (let h = 6; h <= 23; h++) {
+        // Initialize if empty
+        if (!state.planner.hours[h]) {
+          state.planner.hours[h] = { text: "", productiveMs: 0, locked: false };
+        }
+        
+        const block = state.planner.hours[h];
+        const isPast = h < currentRealHour;
+        const isCurrent = h === currentRealHour;
+        const isFuture = h > currentRealHour;
+        
+        const displayTime = h > 12 ? `${h-12} PM` : (h===12 ? `12 PM` : `${h} AM`);
+        
+        const wrap = document.createElement('div');
+        
+        let borderClass = 'border-slate-800 bg-slate-900/40';
+        if (isCurrent) borderClass = 'border-blue-500/40 bg-blue-900/10 shadow-[0_0_15px_rgba(59,130,246,0.1)]';
+        else if (isPast) borderClass = 'border-slate-800/50 bg-slate-900/20 opacity-70';
+
+        wrap.className = `flex flex-col gap-2 p-3 rounded-xl border ${borderClass} transition-all duration-300 relative`;
+        
+        let contentHtml = '';
+        
+        if (!block.text) {
+          // Empty state: Allow adding task if current or future
+          if (isPast) {
+            contentHtml = `<div class="text-xs text-slate-600 italic">No task scheduled.</div>`;
+          } else {
+            contentHtml = `
+              <div class="flex gap-2 w-full">
+                <input type="text" id="planInput-${h}" placeholder="Plan a task..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                <button onclick="savePlannerTask(${h})" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 rounded-lg text-xs font-bold transition">Set</button>
+              </div>`;
+          }
+        } else {
+          // Task exists
+          const prodMins = Math.floor(block.productiveMs / 60000);
+          const activeSecs = Math.floor(block.productiveMs / 1000) % 60;
+          const wastedMins = isPast ? Math.max(0, 60 - prodMins) : 0;
+          const prodPct = Math.min(100, (block.productiveMs / PLANNER_HOUR_LIMIT_MS) * 100);
+          
+          let btnHtml = '';
+          let badgeHtml = '';
+
+          if (isCurrent) {
+            const isRunning = (state.planner.activeTimer.hour === h && state.planner.activeTimer.isRunning);
+            const btnColor = isRunning ? 'bg-amber-500 text-slate-900' : 'bg-blue-600 text-white';
+            const btnIcon = isRunning ? 'fa-pause' : 'fa-play';
+            
+            btnHtml = `
+              <button onclick="togglePlannerTimer(${h})" class="w-8 h-8 flex items-center justify-center rounded-lg ${btnColor} transition active:scale-95 shadow-md">
+                <i class="fa-solid ${btnIcon} text-sm ${!isRunning? 'ml-0.5': ''}"></i>
+              </button>`;
+              
+            badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">ACTIVE</span>`;
+          } else if (isPast && block.locked) {
+             // Past and evaluated
+             if (prodMins > 0) badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">+${prodMins} XP</span>`;
+             else badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">-60 XP Penalty</span>`;
+          }
+
+          contentHtml = `
+            <div class="flex justify-between items-start gap-2 w-full">
+              <div class="flex flex-col flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-slate-200 truncate">${block.text}</span>
+                  ${badgeHtml}
+                </div>
+                <!-- Progress Bar Data -->
+                <div class="flex justify-between text-[9px] font-medium text-slate-500 mb-0.5">
+                  <span class="text-emerald-400">${prodMins}m ${activeSecs}s Prod</span>
+                  ${isPast ? `<span class="text-red-400">${wastedMins}m Wasted</span>` : `<span>Max 60m</span>`}
+                </div>
+                <div class="w-full bg-slate-950 rounded-full h-1.5 border border-slate-800 overflow-hidden flex">
+                  <div class="bg-emerald-500 h-full progress-fill" style="width: ${prodPct}%"></div>
+                  ${isPast ? `<div class="bg-red-500/50 h-full progress-fill" style="width: ${100 - prodPct}%"></div>` : ''}
+                </div>
+              </div>
+              <div class="flex gap-1.5 items-center">
+                ${btnHtml}
+                ${!isPast ? `<button onclick="deletePlannerTask(${h})" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-red-400 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>` : ''}
+              </div>
+            </div>`;
+        }
+
+        wrap.innerHTML = `
+          <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-md ${isCurrent ? 'bg-blue-500' : (isPast ? 'bg-slate-700' : 'bg-slate-800')}"></div>
+          <div class="flex items-center gap-3 pl-2">
+            <div class="w-14 flex-shrink-0 text-right">
+              <span class="text-[10px] font-black tracking-wider ${isCurrent ? 'text-blue-400' : 'text-slate-500'}">${displayTime}</span>
+            </div>
+            <div class="flex-1 border-l border-slate-700/50 pl-3">
+              ${contentHtml}
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(wrap);
+      }
+    }
+
+    function savePlannerTask(h) {
+      const input = document.getElementById(`planInput-${h}`);
+      const text = input.value.trim();
+      if (!text) return;
+
+      state.planner.hours[h] = { text: text, productiveMs: 0, locked: false };
+      playSynthSound('click');
+      saveState();
+      renderPlanner();
+    }
+
+    function deletePlannerTask(h) {
+      // Cannot delete if active timer is running for it
+      if (state.planner.activeTimer.hour === h && state.planner.activeTimer.isRunning) {
+        showFeedbackToast("Pause the timer before deleting!", "error");
+        return;
+      }
+      state.planner.hours[h] = { text: "", productiveMs: 0, locked: false };
+      playSynthSound('click');
+      saveState();
+      renderPlanner();
+    }
+
+    function togglePlannerTimer(h) {
+      const active = state.planner.activeTimer;
+      
+      // If a different hour was running, stop it (safeguard, though UI restricts this)
+      if (active.isRunning && active.hour !== h) {
+        active.isRunning = false;
+      }
+
+      if (active.hour === h && active.isRunning) {
+        // Pause
+        active.isRunning = false;
+        playSynthSound('click');
+      } else {
+        // Start
+        active.hour = h;
+        active.lastTickMs = Date.now();
+        active.isRunning = true;
+        playSynthSound('tick');
+      }
+      
+      saveState();
+      renderPlanner();
+    }
+
+    // Handles the actual background accumulation for Planner
+    function handleBackgroundPlannerRestoration() {
+      const active = state.planner.activeTimer;
+      if (!active.isRunning || active.hour === null) return;
+
+      const block = state.planner.hours[active.hour];
+      if (!block) {
+        active.isRunning = false;
+        return;
+      }
+
+      const now = Date.now();
+      const delta = now - active.lastTickMs;
+      
+      // Determine if hour boundary was crossed while away. 
+      // If they started at 2:50, and it's 3:10, they only get 10 minutes (to 3:00) 
+      // (This is highly complex math without precise date objects, so we cap at max remaining in 60m block)
+      
+      const maxRemaining = PLANNER_HOUR_LIMIT_MS - block.productiveMs;
+      const actualDelta = Math.min(delta, maxRemaining);
+      
+      if (actualDelta > 0) {
+        block.productiveMs += actualDelta;
+      }
+
+      active.lastTickMs = now;
+      saveState();
+      
+      // Let evaluate Hourly handle locks
+    }
+
+    function plannerTickLoop() {
+      // Only increments memory and triggers minimal re-renders to save performance
+      const active = state.planner.activeTimer;
+      if (active.isRunning && active.hour !== null) {
+        const block = state.planner.hours[active.hour];
+        if (block) {
+          const now = Date.now();
+          const delta = now - active.lastTickMs;
+          active.lastTickMs = now;
+          
+          if (block.productiveMs + delta >= PLANNER_HOUR_LIMIT_MS) {
+            block.productiveMs = PLANNER_HOUR_LIMIT_MS;
+            active.isRunning = false; // Auto pause at 60 mins
+            playSynthSound('complete');
+            showFeedbackToast("Maximum productive 60 mins reached for this hour!", "success");
+          } else {
+            block.productiveMs += delta;
+          }
+          
+          // Re-render planner UI if it's currently visible
+          if (!document.getElementById('viewPlanner').classList.contains('hidden')) {
+            renderPlanner();
+          }
+        }
+      }
+    }
+
+    // Checks past hours to lock and apply Gamification (Credits)
+    function evaluateHourlyProgress() {
+      const currentRealHour = new Date().getHours();
+      let stateChanged = false;
+      let prevLevel = getLevel();
+
+      for (let h = 6; h <= 23; h++) {
+        const block = state.planner.hours[h];
+        if (!block || !block.text || block.locked) continue;
+
+        if (h < currentRealHour) {
+          // Hour passed! Evaluate!
+          
+          // Force pause if this was somehow running
+          if (state.planner.activeTimer.hour === h) {
+            state.planner.activeTimer.isRunning = false;
+          }
+
+          const prodMins = Math.floor(block.productiveMs / 60000);
+          
+          if (prodMins === 0) {
+            // Failed to track any time!
+            state.gamification.credits -= 60;
+            if(state.gamification.credits < 0) state.gamification.credits = 0;
+            showFeedbackToast(`Missed Task: ${block.text}! -60 XP Penalty.`, "penalty");
+            playSynthSound('error');
+          } else {
+            // Success tracking!
+            state.gamification.credits += prodMins;
+            showFeedbackToast(`Great focus! +${prodMins} XP earned for ${block.text}`, "success");
+          }
+
+          block.locked = true;
+          stateChanged = true;
+        }
+      }
+
+      if (stateChanged) {
+        saveState();
+        if (!document.getElementById('viewPlanner').classList.contains('hidden')) {
+           renderPlanner();
+        }
+        
+        // Level up check
+        const newLevel = getLevel();
+        if (newLevel > prevLevel) {
+          playSynthSound('levelup');
+          confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
+          showFeedbackToast(`PROMOTION! You reached Level ${newLevel}!`, "success");
+        }
+      }
+    }
+
+
+    // ==========================================
+    // PICKER LOGIC (PRESERVED)
+    // ==========================================
+    
+    function handleBackgroundPickerTimerRestoration() {
+      const t = state.pickerTimer;
+      if (!t || !t.activeTaskId) return;
+
+      const taskExists = state.tasks.find(x => x.id === t.activeTaskId && !x.completed);
+      if (!taskExists) { clearPickerTimer(); return; }
+
+      if (t.isRunning && t.targetTime) {
+        const left = t.targetTime - Date.now();
+        if (left <= 0) {
+          markTaskComplete(t.activeTaskId, true);
+          showFeedbackToast(`Your timer finished in background! Task auto-completed.`);
+          clearPickerTimer();
+        } else {
+          state.currentPickId = t.activeTaskId;
+          populateModalDetails(taskExists);
+          updatePickerTimerUI(left);
+          startPickerTimerLoop();
+          openCongratsModal();
+        }
+      } else if (!t.isRunning && t.remainingTime > 0 && t.remainingTime < DEFAULT_TIMER_MS) {
+        state.currentPickId = t.activeTaskId;
+        populateModalDetails(taskExists);
+        updatePickerTimerUI(t.remainingTime);
+        openCongratsModal();
+      }
+    }
+
+    function updatePickerTimerUI(ms) {
+      document.getElementById('pickerTimerDisplay').textContent = formatTimeDisplay(ms);
+      const icon = document.getElementById('pickerTimerIcon');
+      const btn = document.getElementById('pickerTimerToggleBtn');
+
+      if (state.pickerTimer.isRunning) {
+        icon.className = "fa-solid fa-pause text-xl";
+        btn.className = "w-12 h-12 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 flex items-center justify-center shadow-lg shadow-amber-500/20 transition active:scale-95";
+      } else {
+        icon.className = "fa-solid fa-play text-xl ml-0.5";
+        btn.className = "w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 transition active:scale-95";
+      }
+    }
+
+    function togglePickerTimer() {
+      if (state.pickerTimer.isRunning) {
+        state.pickerTimer.isRunning = false;
+        state.pickerTimer.remainingTime = state.pickerTimer.targetTime - Date.now();
+        state.pickerTimer.targetTime = null;
+        clearInterval(localPickerInterval);
+        playSynthSound('click');
+      } else {
+        state.pickerTimer.isRunning = true;
+        state.pickerTimer.targetTime = Date.now() + state.pickerTimer.remainingTime;
+        playSynthSound('tick');
+        startPickerTimerLoop();
+      }
+      updatePickerTimerUI(state.pickerTimer.remainingTime);
+      saveState();
+    }
+
+    function startPickerTimerLoop() {
+      if (localPickerInterval) clearInterval(localPickerInterval);
+      localPickerInterval = setInterval(() => {
+        const left = state.pickerTimer.targetTime - Date.now();
+        if (left <= 0) {
+          clearInterval(localPickerInterval);
+          updatePickerTimerUI(0);
+          const taskId = state.pickerTimer.activeTaskId;
+          clearPickerTimer(); 
+          if (taskId) {
+            markTaskComplete(taskId, true);
+            showFeedbackToast("Focus time is up! Task auto-completed.");
+          }
+          closeCongratsModal();
+        } else {
+          updatePickerTimerUI(left);
+        }
+      }, 200);
+    }
+
+    function clearPickerTimer() {
+      if (localPickerInterval) clearInterval(localPickerInterval);
+      state.pickerTimer = { activeTaskId: null, isRunning: false, targetTime: null, remainingTime: DEFAULT_TIMER_MS };
+      saveState();
+    }
+
+    function markTaskComplete(id, auto = false) {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task || task.completed) return;
+      checkMidnightRollover();
+      task.completed = true;
+      const todayStr = formatDate(new Date());
+      state.completionHistory[todayStr] = (state.completionHistory[todayStr] || 0) + 1;
+      
+      if (auto || !state.audioEnabled) {
+         playSynthSound('congrats');
+         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      }
+
+      const autoRemove = document.getElementById('autoRemoveToggle')?.checked;
+      if (autoRemove) {
+        setTimeout(() => {
+          state.tasks = state.tasks.filter(t => t.id !== id);
+          saveState();
+          renderTasks();
+          updateDashboard();
+        }, auto ? 0 : 800);
+      }
+
+      saveState(); renderTasks(); updateDashboard();
+    }
+
     function setPriority(val) {
       state.selectedPriority = val;
       const badges = document.querySelectorAll('.prio-badge');
       badges.forEach(badge => {
         const itemVal = badge.getAttribute('data-val');
         if (itemVal === val) {
-          if (val === 'low') {
-            badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-400 bg-slate-400/10 text-slate-300 transition';
-          } else if (val === 'medium') {
-            badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 transition';
-          } else if (val === 'high') {
-            badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 transition';
-          }
+          if (val === 'low') badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-400 bg-slate-400/10 text-slate-300 transition';
+          else if (val === 'medium') badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 transition';
+          else if (val === 'high') badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 transition';
         } else {
           badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800';
         }
@@ -671,36 +1006,21 @@
     }
 
     function saveTasksTemplate() {
-      if (state.tasks.length === 0) {
-        showCustomError("No tasks to save! Add tasks first.");
-        return;
-      }
+      if (state.tasks.length === 0) { showFeedbackToast("No tasks to save!", "error"); return; }
       state.savedTasks = state.tasks.map(t => ({ text: t.text, priority: t.priority }));
-      playSynthSound('click');
-      saveState();
-      showFeedbackToast("Routine template saved successfully!");
+      playSynthSound('click'); saveState();
+      showFeedbackToast("Routine template saved successfully!", "success");
     }
 
     function loadTasksTemplate() {
-      if (!state.savedTasks || state.savedTasks.length === 0) {
-        showCustomError("No saved routine found. Save your tasks first!");
-        return;
-      }
+      if (!state.savedTasks || state.savedTasks.length === 0) { showFeedbackToast("No saved routine found.", "error"); return; }
       checkMidnightRollover();
       const loadedTasks = state.savedTasks.map(t => ({
-        id: crypto.randomUUID(),
-        text: t.text,
-        priority: t.priority,
-        completed: false,
-        createdAt: new Date().toISOString()
+        id: crypto.randomUUID(), text: t.text, priority: t.priority, completed: false, createdAt: new Date().toISOString()
       }));
-
       state.tasks = [...loadedTasks, ...state.tasks];
-      playSynthSound('complete');
-      saveState();
-      renderTasks();
-      updateDashboard();
-      showFeedbackToast("Daily routine loaded!");
+      playSynthSound('complete'); saveState(); renderTasks(); updateDashboard();
+      showFeedbackToast("Daily routine loaded!", "success");
     }
 
     function handleAddTask(e) {
@@ -709,55 +1029,31 @@
       const text = input.value.trim();
       if (!text) return;
       checkMidnightRollover();
-
       state.tasks.unshift({
-        id: crypto.randomUUID(),
-        text: text,
-        priority: state.selectedPriority,
-        completed: false,
-        createdAt: new Date().toISOString()
+        id: crypto.randomUUID(), text: text, priority: state.selectedPriority, completed: false, createdAt: new Date().toISOString()
       });
-      input.value = '';
-      setPriority('medium');
-      
-      playSynthSound('complete');
-      saveState();
-      renderTasks();
-      updateDashboard();
+      input.value = ''; setPriority('medium');
+      playSynthSound('complete'); saveState(); renderTasks(); updateDashboard();
     }
 
     function deleteTask(id) {
       state.tasks = state.tasks.filter(t => t.id !== id);
-      playSynthSound('click');
-      saveState();
-      renderTasks();
-      updateDashboard();
+      playSynthSound('click'); saveState(); renderTasks(); updateDashboard();
     }
-
     function clearCompletedTasks() {
       state.tasks = state.tasks.filter(t => !t.completed);
-      playSynthSound('click');
-      saveState();
-      renderTasks();
-      updateDashboard();
+      playSynthSound('click'); saveState(); renderTasks(); updateDashboard();
     }
 
     function toggleTask(id) {
       const task = state.tasks.find(t => t.id === id);
       if (!task) return;
-      if (!task.completed) {
-        markTaskComplete(id);
-      } else {
-        // Toggle off completion
+      if (!task.completed) { markTaskComplete(id); } 
+      else {
         task.completed = false;
         const todayStr = formatDate(new Date());
-        if (state.completionHistory[todayStr] && state.completionHistory[todayStr] > 0) {
-          state.completionHistory[todayStr]--;
-        }
-        playSynthSound('click');
-        saveState();
-        renderTasks();
-        updateDashboard();
+        if (state.completionHistory[todayStr] && state.completionHistory[todayStr] > 0) state.completionHistory[todayStr]--;
+        playSynthSound('click'); saveState(); renderTasks(); updateDashboard();
       }
     }
 
@@ -773,11 +1069,12 @@
       const nowStr = formatDate(new Date());
       if (state.currentDate !== nowStr) {
         state.tasks = []; 
+        state.planner.hours = {}; 
+        state.planner.activeTimer = { hour: null, lastTickMs: null, isRunning: false };
         state.currentDate = nowStr; 
-        saveState();
-        updateDashboard();
-        renderTasks();
-        showFeedbackToast("It's a new day! Backlog reset automatically.");
+        saveState(); updateDashboard(); renderTasks();
+        if (!document.getElementById('viewPlanner').classList.contains('hidden')) renderPlanner();
+        showFeedbackToast("It's a new day! Trackers reset automatically.");
       }
     }
 
@@ -785,48 +1082,36 @@
       const container = document.getElementById('weekContainer');
       const template = document.getElementById('dayCellTemplate');
       container.innerHTML = '';
-
       const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       const today = new Date();
       const currentDayIndex = today.getDay(); 
       const daysToMonday = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
-      
       const monday = new Date(today);
       monday.setDate(today.getDate() - daysToMonday);
 
-      let totalTasksCompletedThisWeek = 0;
-
+      let total = 0;
       dayLabels.forEach((label, idx) => {
         const targetDate = new Date(monday);
         targetDate.setDate(monday.getDate() + idx);
         const dateStr = formatDate(targetDate);
-        
         const count = state.completionHistory[dateStr] || 0;
-        totalTasksCompletedThisWeek += count;
+        total += count;
 
         const clone = template.content.cloneNode(true);
         const labelEl = clone.querySelector('.day-label');
         labelEl.textContent = label;
-        
         if (formatDate(today) === dateStr) {
           labelEl.classList.add('text-blue-400', 'font-black');
           labelEl.innerHTML += ' <span class="text-[8px] bg-blue-500/20 px-1 rounded">Today</span>';
         }
-
         const box = clone.querySelector('.git-box');
-        const colorClass = getGithubColorClass(count);
-        box.className = `git-box w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 cursor-pointer relative ${colorClass}`;
-        
+        box.className = `git-box w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 cursor-pointer relative ${getGithubColorClass(count)}`;
         const badge = clone.querySelector('.count-badge');
         badge.textContent = count > 0 ? `+${count}` : '';
-        if (count >= 4) {
-          badge.className = 'text-[10px] font-black text-slate-950 count-badge';
-        }
-
+        if (count >= 4) badge.className = 'text-[10px] font-black text-slate-950 count-badge';
         container.appendChild(clone);
       });
-
-      document.getElementById('weeklyCount').textContent = `${totalTasksCompletedThisWeek} Task${totalTasksCompletedThisWeek !== 1 ? 's' : ''} Done`;
+      document.getElementById('weeklyCount').textContent = `${total} Task${total !== 1 ? 's' : ''} Done`;
     }
 
     function triggerConfettiOnDayBox() {
@@ -838,7 +1123,6 @@
     function renderTasks() {
       const taskList = document.getElementById('taskList');
       taskList.innerHTML = '';
-
       const pendingTasks = state.tasks.filter(t => !t.completed);
       const completedTasks = state.tasks.filter(t => t.completed);
       const allSorted = [...pendingTasks, ...completedTasks];
@@ -847,66 +1131,44 @@
         taskList.innerHTML = `
           <div class="flex flex-col items-center justify-center py-8 text-slate-500 text-center">
             <i class="fa-solid fa-clipboard-list text-3xl mb-2 opacity-40"></i>
-            <span class="text-xs font-semibold">Your backlog is completely empty.</span>
-            <span class="text-[10px] mt-0.5">Add tasks manually or <strong class="text-emerald-400">Load Routine</strong> below!</span>
-          </div>
-        `;
+            <span class="text-xs font-semibold">Your backlog is empty.</span>
+          </div>`;
         return;
       }
 
       allSorted.forEach(task => {
         const item = document.createElement('div');
         item.className = `flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${
-          task.completed 
-            ? 'bg-slate-900/30 border-slate-900 text-slate-500 line-through' 
-            : 'bg-slate-900/70 border-slate-800 text-slate-200 hover:border-slate-700/80'
+          task.completed ? 'bg-slate-900/30 border-slate-900 text-slate-500 line-through' : 'bg-slate-900/70 border-slate-800 text-slate-200 hover:border-slate-700/80'
         }`;
 
         let prioBadge = '';
-        if (task.priority === 'low') {
-          prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 uppercase">Low</span>`;
-        } else if (task.priority === 'medium') {
-          prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 uppercase">Medium</span>`;
-        } else {
-          prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 uppercase">High</span>`;
-        }
+        if (task.priority === 'low') prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 uppercase">Low</span>`;
+        else if (task.priority === 'medium') prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 uppercase">Medium</span>`;
+        else prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 uppercase">High</span>`;
 
         item.innerHTML = `
           <div class="flex items-center gap-3 flex-1 min-w-0">
-            <button onclick="toggleTask('${task.id}')" class="w-5 h-5 rounded flex items-center justify-center border transition ${
-              task.completed 
-                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' 
-                : 'bg-slate-950 border-slate-700 text-transparent hover:border-slate-500'
-            }">
+            <button onclick="toggleTask('${task.id}')" class="w-5 h-5 rounded flex items-center justify-center border transition ${task.completed ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-slate-950 border-slate-700 text-transparent hover:border-slate-500'}">
               <i class="fa-solid fa-check text-[10px]"></i>
             </button>
             <div class="flex flex-col min-w-0">
               <span class="text-sm font-medium truncate pr-2 break-all leading-tight">${task.text}</span>
-              <div class="flex gap-1.5 items-center mt-1">
-                ${prioBadge}
-              </div>
+              <div class="flex gap-1.5 items-center mt-1">${prioBadge}</div>
             </div>
           </div>
-          <button onclick="deleteTask('${task.id}')" class="text-slate-500 hover:text-red-400 p-1.5 transition">
-            <i class="fa-solid fa-trash-can text-xs"></i>
-          </button>
+          <button onclick="deleteTask('${task.id}')" class="text-slate-500 hover:text-red-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
         `;
         taskList.appendChild(item);
       });
     }
 
     let isRolling = false;
-
     function startRandomPicker() {
       checkMidnightRollover();
-
       const eligibleTasks = state.tasks.filter(t => !t.completed);
       
-      if (eligibleTasks.length === 0) {
-        showCustomError("Please add or activate at least one pending task to cycle pick!");
-        return;
-      }
-
+      if (eligibleTasks.length === 0) { showFeedbackToast("Add at least one pending task to cycle pick!", "error"); return; }
       if (isRolling) return;
       isRolling = true;
 
@@ -919,82 +1181,55 @@
       chooseBtn.querySelector('span').textContent = "DECIDING DESTINY...";
       pickerBox.classList.add('animating-picker');
 
-      // Randomize the total duration (between 2.5 and 4.0 seconds) so the final target is truly unpredictable
       let duration = 2500 + Math.floor(Math.random() * 1500); 
       let startTime = Date.now();
-      
-      // Start cycling from a completely random index instead of zero
       let currentIndex = Math.floor(Math.random() * eligibleTasks.length);
 
       function roll() {
         const elapsed = Date.now() - startTime;
-        
         if (elapsed >= duration) {
-          // Time is up, pick the current item!
           finishPicking(eligibleTasks[currentIndex]);
         } else {
-          // Cycle to the next item visually
           currentIndex = (currentIndex + 1) % eligibleTasks.length;
-          pickerText.innerHTML = `
-            <span class="text-blue-400 font-bold text-base block sm:text-lg animate-pulse tracking-wide truncate">
-              🔮 ${eligibleTasks[currentIndex].text}
-            </span>
-          `;
+          pickerText.innerHTML = `<span class="text-blue-400 font-bold text-base block sm:text-lg animate-pulse tracking-wide truncate">🔮 ${eligibleTasks[currentIndex].text}</span>`;
           playSynthSound('tick');
-          
-          // Exponential deceleration curve
-          const progress = elapsed / duration;
-          const delay = 50 + Math.pow(progress, 3) * 350; 
+          const delay = 50 + Math.pow(elapsed / duration, 3) * 350; 
           setTimeout(roll, delay);
         }
       }
-
       roll();
     }
 
     function populateModalDetails(selectedTask) {
       const modalTaskText = document.getElementById('modalTaskText');
       const modalTaskPriority = document.getElementById('modalTaskPriority');
-      
       modalTaskText.textContent = selectedTask.text;
-      
-      if (selectedTask.priority === 'low') {
-        modalTaskPriority.className = "text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 inline-block mb-2";
-        modalTaskPriority.textContent = "Low Priority";
-      } else if (selectedTask.priority === 'medium') {
-        modalTaskPriority.className = "text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-blue-500/25 text-blue-300 inline-block mb-2";
-        modalTaskPriority.textContent = "Medium Priority";
-      } else {
-        modalTaskPriority.className = "text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-red-500/25 text-red-300 inline-block mb-2";
-        modalTaskPriority.textContent = "High Priority";
-      }
+      if (selectedTask.priority === 'low') { modalTaskPriority.className = "text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 inline-block mb-2"; modalTaskPriority.textContent = "Low Priority"; }
+      else if (selectedTask.priority === 'medium') { modalTaskPriority.className = "text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-blue-500/25 text-blue-300 inline-block mb-2"; modalTaskPriority.textContent = "Medium Priority"; }
+      else { modalTaskPriority.className = "text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-red-500/25 text-red-300 inline-block mb-2"; modalTaskPriority.textContent = "High Priority"; }
     }
 
     function finishPicking(selectedTask) {
       isRolling = false;
       state.currentPickId = selectedTask.id;
 
-      // Reset UI
       const chooseBtn = document.getElementById('chooseBtn');
       chooseBtn.disabled = false;
       chooseBtn.className = "glow-btn w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-lg active:scale-95 transition transform duration-150";
       chooseBtn.querySelector('span').textContent = "CHOOSE A TASK";
       document.getElementById('pickerBox').classList.remove('animating-picker');
-      document.getElementById('pickerText').innerHTML = `
-        <span class="text-emerald-400 font-extrabold text-lg sm:text-xl tracking-wider block truncate">🏆 ${selectedTask.text}</span>
-      `;
+      document.getElementById('pickerText').innerHTML = `<span class="text-emerald-400 font-extrabold text-lg sm:text-xl tracking-wider block truncate">🏆 ${selectedTask.text}</span>`;
 
       playSynthSound('congrats');
       confetti({ particleCount: 150, spread: 80, origin: { y: 0.65 } });
 
-      // Init Timer Data
-      clearActiveTimer();
-      state.timer.activeTaskId = selectedTask.id;
-      state.timer.remainingTime = DEFAULT_TIMER_MS;
+      clearPickerTimer();
+      state.pickerTimer.activeTaskId = selectedTask.id;
+      state.pickerTimer.remainingTime = DEFAULT_TIMER_MS;
       saveState();
 
       populateModalDetails(selectedTask);
-      updateTimerUI(DEFAULT_TIMER_MS);
+      updatePickerTimerUI(DEFAULT_TIMER_MS);
       openCongratsModal();
     }
 
@@ -1002,125 +1237,49 @@
       const overlay = document.getElementById('modalOverlay');
       const card = document.getElementById('modalCard');
       overlay.classList.remove('hidden');
-      setTimeout(() => {
-        card.classList.remove('scale-90', 'opacity-0');
-        card.classList.add('scale-100', 'opacity-100');
-      }, 50);
+      setTimeout(() => { card.classList.remove('scale-90', 'opacity-0'); card.classList.add('scale-100', 'opacity-100'); }, 50);
     }
-
     function closeCongratsModal() {
       const overlay = document.getElementById('modalOverlay');
       const card = document.getElementById('modalCard');
-      card.classList.remove('scale-100', 'opacity-100');
-      card.classList.add('scale-90', 'opacity-0');
-      setTimeout(() => {
-        overlay.classList.add('hidden');
-      }, 200);
+      card.classList.remove('scale-100', 'opacity-100'); card.classList.add('scale-90', 'opacity-0');
+      setTimeout(() => { overlay.classList.add('hidden'); }, 200);
     }
 
     function handleModalAction(action) {
-      if (!state.currentPickId) {
-        closeCongratsModal();
-        return;
-      }
-
-      if (action === 'complete') {
-        markTaskComplete(state.currentPickId);
-      } else if (action === 'keep') {
-        showFeedbackToast("Kept in backlog, keep striving!");
-      }
-
-      // Any explicit action on the modal cancels the timer
-      clearActiveTimer();
-      state.currentPickId = null;
-      closeCongratsModal();
-    }
-
-    function showFeedbackToast(msg) {
-      const toast = document.createElement('div');
-      toast.className = "fixed bottom-5 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 border border-slate-800 shadow-xl px-5 py-3 rounded-xl text-xs font-semibold text-slate-200 text-center flex items-center gap-2 animate-bounce";
-      toast.innerHTML = `<i class="fa-solid fa-circle-info text-blue-400"></i> ${msg}`;
-      document.body.appendChild(toast);
-      setTimeout(() => { toast.remove(); }, 3500);
-    }
-
-    function showCustomError(msg) {
-      const toast = document.createElement('div');
-      toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-red-950 border border-red-800 shadow-xl px-5 py-3 rounded-xl text-xs font-semibold text-red-200 text-center flex items-center gap-2 animate-bounce";
-      toast.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-400"></i> ${msg}`;
-      document.body.appendChild(toast);
-      setTimeout(() => { toast.remove(); }, 3500);
+      if (!state.currentPickId) { closeCongratsModal(); return; }
+      if (action === 'complete') markTaskComplete(state.currentPickId);
+      else if (action === 'keep') showFeedbackToast("Kept in backlog, keep striving!");
+      clearPickerTimer(); state.currentPickId = null; closeCongratsModal();
     }
 
     function updateDashboard() {
-      const todoCount = state.tasks.filter(t => !t.completed).length;
-      document.getElementById('statTodo').textContent = todoCount;
-      const todayStr = formatDate(new Date());
-      document.getElementById('statCompleted').textContent = state.completionHistory[todayStr] || 0;
-      calculateStreak();
-      renderGithubGrid();
-    }
-
-    function calculateStreak() {
+      document.getElementById('statTodo').textContent = state.tasks.filter(t => !t.completed).length;
+      document.getElementById('statCompleted').textContent = state.completionHistory[formatDate(new Date())] || 0;
+      
       let streak = 0;
-      const today = new Date();
-      let checkDate = new Date(today);
+      let checkDate = new Date();
       while (true) {
-        const dateStr = formatDate(checkDate);
-        const count = state.completionHistory[dateStr] || 0;
-        if (count > 0) {
-          streak++;
-          checkDate.setDate(checkDate.getDate() - 1);
-        } else {
-          if (formatDate(today) === dateStr) {
-            checkDate.setDate(checkDate.getDate() - 1);
-            continue;
-          }
+        const str = formatDate(checkDate);
+        if ((state.completionHistory[str] || 0) > 0) { streak++; checkDate.setDate(checkDate.getDate() - 1); } 
+        else {
+          if (formatDate(new Date()) === str) { checkDate.setDate(checkDate.getDate() - 1); continue; }
           break;
         }
       }
-      state.streak = streak;
       document.getElementById('statStreak').textContent = `${streak}d`;
+      renderGithubGrid();
     }
 
-    // PWA Engine
+    // ==========================================
+    // PWA & BACKGROUND INTERVALS
+    // ==========================================
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
+      e.preventDefault(); deferredPrompt = e;
       const installBtn = document.getElementById('pwaInstallBtn');
       if (installBtn) installBtn.classList.remove('hidden');
     });
-
-    function setupServiceWorkerAndManifest() {
-      try {
-        const manifestObj = {
-          "short_name": "PickFlow",
-          "name": "PickFlow Productivity Task Picker",
-          "icons": [
-            { "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%232563eb'/><path d='M96,45 L135,112 L57,112 Z' fill='white'/><circle cx='96' cy='135' r='12' fill='%2310b981'/></svg>", "type": "image/svg+xml", "sizes": "192x192" },
-            { "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%232563eb'/><path d='M256,120 L360,300 L152,300 Z' fill='white'/><circle cx='256' cy='360' r='30' fill='%2310b981'/></svg>", "type": "image/svg+xml", "sizes": "512x512" }
-          ],
-          "start_url": ".", "background_color": "#020617", "theme_color": "#0f172a", "display": "standalone", "orientation": "portrait"
-        };
-        const manifestStr = JSON.stringify(manifestObj);
-        const blob = new Blob([manifestStr], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
-        const manifestLink = document.createElement('link');
-        manifestLink.rel = 'manifest';
-        manifestLink.href = manifestURL;
-        document.head.appendChild(manifestLink);
-
-        const swCode = `
-          const CACHE_NAME = 'pickflow-v5';
-          self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE_NAME).then((cache) => { return cache.addAll(['./', './index.html']); }).catch(() => {})); });
-          self.addEventListener('fetch', (e) => { e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request))); });
-        `;
-        const swBlob = new Blob([swCode], {type: 'text/javascript'});
-        const swURL = URL.createObjectURL(swBlob);
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register(swURL).catch(e => console.warn("SW skipped.", e));
-      } catch (err) {}
-    }
 
     const installBtn = document.getElementById('pwaInstallBtn');
     if (installBtn) {
@@ -1133,14 +1292,20 @@
       });
     }
 
-    setInterval(checkMidnightRollover, 60000);
+    // Global background evaluator loop
+    setInterval(() => {
+      checkMidnightRollover();
+      evaluateHourlyProgress();
+      
+      // Update Planner Tick accurately in UI Memory
+      plannerTickLoop();
+    }, 1000); 
 
-    // INITIALIZATION
     window.onload = function() {
       loadState();
       updateDashboard();
       renderTasks();
-      setupServiceWorkerAndManifest();
+      evaluateHourlyProgress(); // Catch up on any past hours missed while offline!
     };
   </script>
 </body>
