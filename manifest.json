@@ -1,0 +1,19 @@
+{
+  "short_name": "PickFlow",
+  "name": "PickFlow Productivity Task Picker",
+  "description": "Ultimate Task Picker & Hourly Planner",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "orientation": "portrait"
+}
