@@ -120,8 +120,8 @@
       </div>
       
       <div class="flex gap-2">
-        <button id="pwaInstallBtn" class="hidden text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-circle-down"></i> Install
+        <button id="pwaInstallBtn" class="text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-download"></i> Install App
         </button>
         <button onclick="toggleAudio()" id="audioToggleBtn" class="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-300 hover:text-white transition">
           <i class="fa-solid fa-volume-high"></i>
@@ -1229,17 +1229,16 @@
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
+    // Hide install button if app is already installed
+    if (isStandalone) {
+      const installBtn = document.getElementById('pwaInstallBtn');
+      if (installBtn) installBtn.classList.add('hidden');
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => { 
       e.preventDefault(); 
       deferredPrompt = e; 
-      const installBtn = document.getElementById('pwaInstallBtn'); 
-      if (installBtn && !isStandalone) installBtn.classList.remove('hidden'); 
     });
-
-    if (isIOS && !isStandalone) {
-      const installBtn = document.getElementById('pwaInstallBtn'); 
-      if (installBtn) installBtn.classList.remove('hidden'); 
-    }
 
     function setupServiceWorkerAndManifest() {
       try {
@@ -1253,7 +1252,8 @@
             { "src": icon192, "type": "image/svg+xml", "sizes": "192x192" },
             { "src": icon512, "type": "image/svg+xml", "sizes": "512x512" }
           ],
-          "start_url": window.location.href.split('?')[0],
+          "start_url": ".",
+          "scope": ".",
           "background_color": "#020617",
           "theme_color": "#0f172a",
           "display": "standalone",
@@ -1294,9 +1294,9 @@
           if (outcome === 'accepted') installBtn.classList.add('hidden'); 
           deferredPrompt = null; 
         } else if (isIOS) {
-          showFeedbackToast("To install on iOS: tap 'Share' then 'Add to Home Screen'.", "info");
+          showFeedbackToast("To install on iOS: Tap 'Share' (square with arrow) -> 'Add to Home Screen'.", "info");
         } else {
-          showFeedbackToast("Install app via your browser's menu (Add to Home Screen).", "info");
+          showFeedbackToast("To install on Android: Tap the browser menu (⋮) -> 'Install app' or 'Add to Home screen'.", "info");
         }
       }); 
     }
