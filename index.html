@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <!-- PWA Meta Tags added for strict Mobile & iOS installation -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PickFlow">
   <title>PickFlow - Ultimate Task Picker & Planner</title>
   
   <!-- Tailwind CSS -->
@@ -1221,9 +1226,81 @@
     // PWA & BOOTSTRAP
     // ==========================================
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const installBtn = document.getElementById('pwaInstallBtn'); if (installBtn) installBtn.classList.remove('hidden'); });
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    window.addEventListener('beforeinstallprompt', (e) => { 
+      e.preventDefault(); 
+      deferredPrompt = e; 
+      const installBtn = document.getElementById('pwaInstallBtn'); 
+      if (installBtn && !isStandalone) installBtn.classList.remove('hidden'); 
+    });
+
+    if (isIOS && !isStandalone) {
+      const installBtn = document.getElementById('pwaInstallBtn'); 
+      if (installBtn) installBtn.classList.remove('hidden'); 
+    }
+
+    function setupServiceWorkerAndManifest() {
+      try {
+        const icon192 = "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27192%27%20height%3D%27192%27%20viewBox%3D%270%200%20192%20192%27%3E%3Crect%20width%3D%27192%27%20height%3D%27192%27%20rx%3D%2740%27%20fill%3D%27%232563eb%27%2F%3E%3Cpath%20d%3D%27M96%2C45%20L135%2C112%20L57%2C112%20Z%27%20fill%3D%27white%27%2F%3E%3Ccircle%20cx%3D%2796%27%20cy%3D%27135%27%20r%3D%2712%27%20fill%3D%27%2310b981%27%2F%3E%3C%2Fsvg%3E";
+        const icon512 = "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27512%27%20height%3D%27512%27%20viewBox%3D%270%200%20512%20512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%27110%27%20fill%3D%27%232563eb%27%2F%3E%3Cpath%20d%3D%27M256%2C120%20L360%2C300%20L152%2C300%20Z%27%20fill%3D%27white%27%2F%3E%3Ccircle%20cx%3D%27256%27%20cy%3D%27360%27%20r%3D%2730%27%20fill%3D%27%2310b981%27%2F%3E%3C%2Fsvg%3E";
+
+        const manifestObj = {
+          "short_name": "PickFlow",
+          "name": "PickFlow Productivity Task Picker",
+          "icons": [
+            { "src": icon192, "type": "image/svg+xml", "sizes": "192x192" },
+            { "src": icon512, "type": "image/svg+xml", "sizes": "512x512" }
+          ],
+          "start_url": window.location.href.split('?')[0],
+          "background_color": "#020617",
+          "theme_color": "#0f172a",
+          "display": "standalone",
+          "orientation": "portrait"
+        };
+        
+        // Use Data URI for Manifest (Solves Blob origin issues)
+        const manifestStr = JSON.stringify(manifestObj);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(manifestStr);
+        document.head.appendChild(manifestLink);
+
+        // Inject Apple Touch Icon for iOS support
+        const appleIcon = document.createElement('link');
+        appleIcon.rel = 'apple-touch-icon';
+        appleIcon.href = icon192;
+        document.head.appendChild(appleIcon);
+
+        // Service Worker setup (Blob with application/javascript)
+        const swCode = `
+          const CACHE_NAME = 'pickflow-v8';
+          self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE_NAME).then((cache) => { return cache.addAll([location.href]); }).catch(() => {})); });
+          self.addEventListener('fetch', (e) => { e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request))); });
+        `;
+        const swBlob = new Blob([swCode], {type: 'application/javascript'});
+        const swURL = URL.createObjectURL(swBlob);
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register(swURL).catch(e => console.warn("SW skipped.", e));
+      } catch (err) {}
+    }
+
     const installBtn = document.getElementById('pwaInstallBtn');
-    if (installBtn) { installBtn.addEventListener('click', async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.classList.add('hidden'); deferredPrompt = null; }); }
+    if (installBtn) { 
+      installBtn.addEventListener('click', async () => { 
+        if (deferredPrompt) {
+          deferredPrompt.prompt(); 
+          const { outcome } = await deferredPrompt.userChoice; 
+          if (outcome === 'accepted') installBtn.classList.add('hidden'); 
+          deferredPrompt = null; 
+        } else if (isIOS) {
+          showFeedbackToast("To install on iOS: tap 'Share' then 'Add to Home Screen'.", "info");
+        } else {
+          showFeedbackToast("Install app via your browser's menu (Add to Home Screen).", "info");
+        }
+      }); 
+    }
+
     setInterval(() => { checkMidnightRollover(); evaluateHourlyProgress(); plannerTickLoop(); }, 1000); 
 
     window.onload = function() {
