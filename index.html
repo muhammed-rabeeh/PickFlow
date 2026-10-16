@@ -123,6 +123,9 @@
         <button id="pwaInstallBtn" class="hidden text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
           <i class="fa-solid fa-download"></i> Install
         </button>
+        <button onclick="switchTab('ai')" title="AI Smart Scheduler & API Key" class="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-fuchsia-400 hover:text-fuchsia-300 border border-fuchsia-500/30 transition">
+          <i class="fa-solid fa-robot"></i>
+        </button>
         <button onclick="toggleAudio()" id="audioToggleBtn" class="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-300 hover:text-white transition">
           <i class="fa-solid fa-volume-high"></i>
         </button>
@@ -322,6 +325,21 @@
         Schedule tasks per hour. Earn <strong class="text-emerald-400">+1 Credit</strong> per active minute. Miss a scheduled task entirely? Lose <strong class="text-red-400">-60 Credits</strong>.
       </div>
 
+      <div class="glass-card rounded-2xl p-3 border border-fuchsia-500/30 bg-gradient-to-r from-fuchsia-950/30 via-slate-900/60 to-blue-950/30 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-fuchsia-500/20 border border-fuchsia-500/40 flex items-center justify-center text-fuchsia-400 flex-shrink-0">
+            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span class="text-xs font-bold text-slate-100 truncate">Need help planning your hours?</span>
+            <span class="text-[10px] text-slate-400 truncate">Let Gemini 3.5 Flash-Lite optimize your day</span>
+          </div>
+        </div>
+        <button onclick="switchTab('ai')" class="px-3 py-1.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-[10px] font-bold transition flex-shrink-0 shadow-md shadow-fuchsia-500/20">
+          AI Plan <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+
       <div class="glass-card rounded-2xl p-3 flex flex-col gap-2 relative" id="hourlyListContainer"></div>
     </div>
 
@@ -374,6 +392,102 @@
         <div id="rewardsList" class="flex flex-col gap-2 mt-2 relative z-10"></div>
       </div>
     </div>
+
+    <!-- ============================================== -->
+    <!-- VIEW 5: AI SMART SCHEDULER (GEMINI 3.5 LITE)   -->
+    <!-- ============================================== -->
+    <div id="viewAI" class="hidden flex-col gap-4 w-full">
+      <!-- API KEY CONFIGURATION CARD -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 border border-fuchsia-500/30 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-28 h-28 bg-fuchsia-500/15 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-key text-fuchsia-400 text-xs"></i>
+            <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Gemini API Configuration</h2>
+          </div>
+          <span id="apiKeyStatusBadge" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">No Key Set</span>
+        </div>
+
+        <div class="flex items-center justify-between text-[10px] text-slate-400 bg-slate-950/60 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
+          <span>Active AI Model:</span>
+          <span class="font-mono font-bold text-fuchsia-400">gemini-3.5-flash-lite</span>
+        </div>
+
+        <div class="flex gap-1.5 w-full">
+          <div class="relative flex-1 min-w-0">
+            <input type="password" id="geminiApiKeyInput" placeholder="Paste your Gemini API key here..."
+                   class="glass-input w-full pl-3 pr-8 py-2 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
+            <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs">
+              <i class="fa-solid fa-eye" id="apiKeyEyeIcon"></i>
+            </button>
+          </div>
+          <button type="button" onclick="saveGeminiApiKey()" class="px-3 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-xl text-xs font-bold transition active:scale-95 shadow-md shadow-fuchsia-500/20 flex-shrink-0">
+            Save Key
+          </button>
+        </div>
+        <p class="text-[9px] text-slate-400 leading-tight">
+          Your API key is stored locally on your device (`localStorage`) and sent directly to Google's Gemini API.
+        </p>
+      </div>
+
+      <!-- AI TASK & TIMER SNAPSHOT -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-brain text-fuchsia-400"></i> AI Scheduler Assistant
+          </h2>
+          <span id="aiContextSummaryBadge" class="text-[9px] bg-blue-500/15 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30 font-semibold">0 Tasks Ready</span>
+        </div>
+
+        <p class="text-[10px] text-slate-400 leading-snug">
+          Tell the AI your available hours, energy levels, or priorities. It will analyze your <strong>Daily Backlog</strong>, <strong>Master Task Timers</strong>, and <strong>Weekly Plan</strong> to build an optimized schedule.
+        </p>
+
+        <!-- Quick Prompt Chips -->
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="setAiQuickPrompt('Schedule my pending tasks and Master Timers into my remaining free hours today with a 1-hour break.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/80 px-2.5 py-1 rounded-lg transition">
+            ⚡ Schedule rest of today
+          </button>
+          <button type="button" onclick="setAiQuickPrompt('Focus heavily on my Master Timer goals today. Allocate deep work blocks in my available hours.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg transition">
+            ⏱️ Prioritize Master Timers
+          </button>
+          <button type="button" onclick="setAiQuickPrompt('I only have 3 hours available starting right now. Pick the most important tasks and schedule them.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-lg transition">
+            🎯 3-Hour Sprint
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <textarea id="aiPromptInput" rows="3" placeholder="E.g., I am free from 10 AM to 6 PM today, with lunch at 1 PM. Schedule my tasks and allocate 2 hours to my Master Timer project..."
+                    class="glass-input w-full p-3 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none resize-none"></textarea>
+
+          <label class="flex items-center justify-between text-[10px] text-slate-300 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800 cursor-pointer">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt text-amber-400"></i> Auto-apply generated schedule to Hourly & Daily tabs
+            </span>
+            <input type="checkbox" id="aiAutoApplyToggle" checked class="accent-fuchsia-500 w-3.5 h-3.5 rounded">
+          </label>
+
+          <button type="button" onclick="generateAiSchedule()" id="aiGenerateBtn" class="glow-btn w-full py-3 px-4 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-fuchsia-500/20 flex items-center justify-center gap-2 text-xs active:scale-95 transition">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>ANALYZE & SCHEDULE MY DAY</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- AI GENERATED SCHEDULE PREVIEW / RESULT -->
+      <div id="aiResultCard" class="glass-card rounded-2xl p-4 hidden flex-col gap-3 border border-emerald-500/30">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-Sparkles"></i> AI Proposed Schedule
+          </h3>
+          <button type="button" onclick="applyLastAiProposal()" id="aiManualApplyBtn" class="text-[10px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-2.5 py-1 rounded-lg transition shadow-md">
+            <i class="fa-solid fa-check mr-1"></i> Apply to Planner
+          </button>
+        </div>
+        <p id="aiAnalysisText" class="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 leading-relaxed"></p>
+        <div id="aiProposedHoursList" class="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1"></div>
+      </div>
+    </div>
   </div>
 
   <!-- FIXED BOTTOM NAVIGATION BAR -->
@@ -394,6 +508,10 @@
       <button onclick="switchTab('weekly')" id="navWeeklyBtn" class="flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-purple-400">
         <i class="fa-solid fa-calendar-days text-lg group-active:scale-90 transition-transform"></i>
         <span class="text-[10px] font-bold tracking-wide">Weekly</span>
+      </button>
+      <button onclick="switchTab('ai')" id="navAiBtn" class="flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-fuchsia-400">
+        <i class="fa-solid fa-robot text-lg group-active:scale-90 transition-transform"></i>
+        <span class="text-[10px] font-bold tracking-wide">AI Plan</span>
       </button>
     </div>
   </nav>
@@ -485,9 +603,12 @@
     const DEFAULT_TIMER_MS = 30 * 60 * 1000;
     const PLANNER_HOUR_LIMIT_MS = 60 * 60 * 1000;
     const CREDITS_PER_LEVEL = 2000;
+    const apiKey = ""; // Canvas runtime fallback key
+    const AI_MODEL_ID = "gemini-3.5-flash-lite";
     
     let localPickerInterval = null;
     let selectedWeeklyDay = "Mon"; 
+    let lastAiProposal = null;
     const dayNamesList = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     let state = {
@@ -513,7 +634,8 @@
       },
       gamification: { credits: 0 },
       weeklyPlan: { Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [] },
-      rewards: [] 
+      rewards: [],
+      aiConfig: { userApiKey: "" }
     };
 
     function formatDate(date) {
@@ -574,6 +696,7 @@
           if (!state.rewards) state.rewards = [];
           if (!state.goalTasks) state.goalTasks = [];
           if (!state.activeGoalTimer) state.activeGoalTimer = { goalId: null, isRunning: false, lastTickMs: null };
+          if (!state.aiConfig) state.aiConfig = { userApiKey: "" };
 
           state.goalTasks = state.goalTasks.map(ensureGoalProps);
 
@@ -680,11 +803,17 @@
 
     function switchTab(tabId) {
       playSynthSound('click');
-      const views = ['viewPicker', 'viewTimers', 'viewPlanner', 'viewWeekly'];
-      const navs = ['navPickerBtn', 'navTimersBtn', 'navPlannerBtn', 'navWeeklyBtn'];
+      const views = ['viewPicker', 'viewTimers', 'viewPlanner', 'viewWeekly', 'viewAI'];
+      const navs = ['navPickerBtn', 'navTimersBtn', 'navPlannerBtn', 'navWeeklyBtn', 'navAiBtn'];
 
-      navs.forEach(n => document.getElementById(n).className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-slate-300");
-      views.forEach(v => { document.getElementById(v).classList.add('hidden'); document.getElementById(v).classList.remove('flex'); });
+      navs.forEach(n => {
+        const el = document.getElementById(n);
+        if (el) el.className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-slate-300";
+      });
+      views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+      });
       
       populateGoalDropdowns();
 
@@ -700,11 +829,357 @@
         document.getElementById('viewPlanner').classList.remove('hidden'); document.getElementById('viewPlanner').classList.add('flex');
         document.getElementById('navPlannerBtn').className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group";
         renderPlanner();
-      } else {
+      } else if (tabId === 'weekly') {
         document.getElementById('viewWeekly').classList.remove('hidden'); document.getElementById('viewWeekly').classList.add('flex');
         document.getElementById('navWeeklyBtn').className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group";
         renderWeeklyView();
+      } else if (tabId === 'ai') {
+        document.getElementById('viewAI').classList.remove('hidden'); document.getElementById('viewAI').classList.add('flex');
+        document.getElementById('navAiBtn').className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group";
+        renderAiView();
       }
+    }
+
+    function renderAiView() {
+      const keyInput = document.getElementById('geminiApiKeyInput');
+      const badge = document.getElementById('apiKeyStatusBadge');
+      const savedKey = state.aiConfig?.userApiKey || "";
+      if (keyInput && document.activeElement !== keyInput) {
+        keyInput.value = savedKey;
+      }
+      if (badge) {
+        if (savedKey.trim().length > 5) {
+          badge.textContent = "Key Saved ✓";
+          badge.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        } else {
+          badge.textContent = "No Key Set";
+          badge.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+        }
+      }
+
+      const pendingDaily = state.tasks.filter(t => !t.completed).length;
+      const activeGoals = state.goalTasks.filter(g => !g.completed).length;
+      const summaryBadge = document.getElementById('aiContextSummaryBadge');
+      if (summaryBadge) {
+        summaryBadge.textContent = `${pendingDaily} Daily • ${activeGoals} Timers`;
+      }
+    }
+
+    function toggleApiKeyVisibility() {
+      const inp = document.getElementById('geminiApiKeyInput');
+      const icon = document.getElementById('apiKeyEyeIcon');
+      if (!inp) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        inp.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    }
+
+    function saveGeminiApiKey() {
+      const inp = document.getElementById('geminiApiKeyInput');
+      if (!inp) return;
+      state.aiConfig.userApiKey = inp.value.trim();
+      saveState();
+      renderAiView();
+      playSynthSound('complete');
+      if (state.aiConfig.userApiKey) {
+        showFeedbackToast("Gemini API Key saved locally!", "success");
+      } else {
+        showFeedbackToast("Gemini API Key cleared.", "info");
+      }
+    }
+
+    function setAiQuickPrompt(text) {
+      const area = document.getElementById('aiPromptInput');
+      if (area) {
+        area.value = text;
+        playSynthSound('click');
+      }
+    }
+
+    async function fetchGeminiWithBackoff(url, payload, retries = 4) {
+      let delay = 1000;
+      for (let i = 0; i <= retries; i++) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (response.ok) {
+            return await response.json();
+          }
+          if ((response.status === 429 || response.status >= 500) && i < retries) {
+            await new Promise(r => setTimeout(r, delay));
+            delay *= 2;
+            continue;
+          }
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.error?.message || `API Error (${response.status})`);
+        } catch (err) {
+          if (i === retries) throw err;
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    async function generateAiSchedule() {
+      const effectiveKey = (state.aiConfig?.userApiKey || "").trim() || apiKey;
+      const inpField = document.getElementById('geminiApiKeyInput');
+      if (!effectiveKey && inpField && inpField.value.trim()) {
+        state.aiConfig.userApiKey = inpField.value.trim();
+        saveState();
+        renderAiView();
+      }
+      const activeKey = (state.aiConfig?.userApiKey || "").trim() || apiKey;
+      if (!activeKey) {
+        showFeedbackToast("Please paste and save your Gemini API Key first!", "error");
+        if (inpField) inpField.focus();
+        return;
+      }
+
+      const userPromptEl = document.getElementById('aiPromptInput');
+      const userRequest = (userPromptEl?.value || "").trim() || "Schedule my active tasks and master timers optimally for the rest of today.";
+
+      const btn = document.getElementById('aiGenerateBtn');
+      const originalBtnHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>GEMINI 3.5 FLASH-LITE THINKING...</span>`;
+      playSynthSound('click');
+
+      try {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const todayDayName = dayNamesList[now.getDay()];
+
+        const pendingDaily = state.tasks.filter(t => !t.completed).map(t => ({
+          id: t.id,
+          text: t.text,
+          priority: t.priority,
+          linkedGoalId: t.goalId || null
+        }));
+
+        const activeGoalTimers = state.goalTasks.filter(g => !g.completed).map(g => {
+          ensureGoalProps(g);
+          return {
+            id: g.id,
+            text: g.text,
+            remainingMinutes: Math.ceil(g.remainingMs / 60000),
+            totalExpectedMinutes: Math.ceil(g.expectedMs / 60000)
+          };
+        });
+
+        const todayWeeklyTasks = (state.weeklyPlan[todayDayName] || []).map(w => ({
+          id: w.id,
+          text: w.text,
+          priority: w.priority,
+          linkedGoalId: w.goalId || null
+        }));
+
+        const existingHourly = {};
+        for (let h = 6; h <= 23; h++) {
+          const slot = state.planner.hours[h];
+          if (slot && slot.text) {
+            existingHourly[h] = { text: slot.text, locked: slot.locked, productiveMinutes: Math.floor((slot.productiveMs || 0) / 60000) };
+          }
+        }
+
+        const systemInstruction = `You are PickFlow AI, an expert productivity & time-management scheduler.
+Analyze the user's pending Daily Backlog tasks, multi-hour Master Task Timers (Goals), Weekly planned tasks for today (${todayDayName}), and their Hourly Day Planner (valid hours are integers from 6 to 23, where 6 = 6:00 AM and 23 = 11:00 PM).
+Current local hour (24h format): ${currentHour}:00.
+Rules:
+1. Respect the user's availability or time constraints stated in their prompt. If they don't specify hours, schedule starting from max(6, ${currentHour}) up to 22 or 23.
+2. Do not overwrite past hours (< ${currentHour}) that are already locked.
+3. Prioritize high-priority daily tasks and active Master Task Timers (which may need multiple 1-hour blocks if they have > 60 remainingMinutes).
+4. Whenever you schedule an existing Master Task Timer into an hour slot, set "sourceType" to "goal" and "linkedId" to its exact id.
+5. Whenever you schedule an existing Daily Backlog task into an hour slot, set "sourceType" to "daily" and "linkedId" to its exact id.
+6. If you suggest any new actionable daily tasks to add to Today's backlog, include them in "newDailyTasks".`;
+
+        const contextPayload = JSON.stringify({
+          currentHour24: currentHour,
+          todayDayOfWeek: todayDayName,
+          userRequest: userRequest,
+          pendingDailyBacklog: pendingDaily,
+          activeMasterGoalTimers: activeGoalTimers,
+          weeklyTasksForToday: todayWeeklyTasks,
+          currentHourlySchedule: existingHourly
+        });
+
+        const payload = {
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ role: "user", parts: [{ text: contextPayload }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                analysisSummary: { type: "STRING" },
+                hourlySchedule: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      hour: { type: "INTEGER" },
+                      taskText: { type: "STRING" },
+                      sourceType: { type: "STRING" },
+                      linkedId: { type: "STRING" },
+                      reason: { type: "STRING" }
+                    },
+                    required: ["hour", "taskText", "sourceType", "reason"]
+                  }
+                },
+                newDailyTasks: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      text: { type: "STRING" },
+                      priority: { type: "STRING" }
+                    },
+                    required: ["text", "priority"]
+                  }
+                }
+              },
+              required: ["analysisSummary", "hourlySchedule"]
+            }
+          }
+        };
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL_ID}:generateContent?key=${encodeURIComponent(activeKey)}`;
+        const result = await fetchGeminiWithBackoff(apiUrl, payload);
+        const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawJson) throw new Error("Empty response from Gemini 3.5 Flash-Lite.");
+
+        const parsed = JSON.parse(rawJson);
+        lastAiProposal = parsed;
+        renderAiProposal(parsed);
+
+        const autoApply = document.getElementById('aiAutoApplyToggle')?.checked;
+        if (autoApply) {
+          applyLastAiProposal(true);
+        } else {
+          playSynthSound('congrats');
+          showFeedbackToast("AI Schedule ready! Review & tap Apply below.", "success");
+        }
+      } catch (err) {
+        playSynthSound('error');
+        showFeedbackToast(err.message || "Failed to generate AI schedule. Check API key.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
+      }
+    }
+
+    function renderAiProposal(proposal) {
+      const card = document.getElementById('aiResultCard');
+      const summaryEl = document.getElementById('aiAnalysisText');
+      const listEl = document.getElementById('aiProposedHoursList');
+      if (!card || !summaryEl || !listEl) return;
+
+      card.classList.remove('hidden');
+      card.classList.add('flex');
+      summaryEl.textContent = proposal.analysisSummary || "Here is your optimized schedule:";
+      listEl.innerHTML = '';
+
+      const sortedHours = [...(proposal.hourlySchedule || [])].sort((a, b) => a.hour - b.hour);
+      sortedHours.forEach(item => {
+        if (item.hour < 6 || item.hour > 23) return;
+        const displayTime = item.hour > 12 ? `${item.hour - 12} PM` : (item.hour === 12 ? `12 PM` : `${item.hour} AM`);
+        let badge = `<span class="text-[8px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 uppercase font-bold">${item.sourceType || 'task'}</span>`;
+        if (item.sourceType === 'goal') badge = `<span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase font-bold">Timer Sync</span>`;
+        else if (item.sourceType === 'daily') badge = `<span class="text-[8px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase font-bold">Daily Task</span>`;
+
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800";
+        row.innerHTML = `
+          <div class="w-12 flex-shrink-0 text-right pr-2 border-r border-slate-800">
+            <span class="text-[10px] font-black text-fuchsia-400">${displayTime}</span>
+          </div>
+          <div class="flex flex-col flex-1 min-w-0 pl-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-xs font-bold text-slate-100 truncate">${item.taskText}</span>
+              ${badge}
+            </div>
+            <span class="text-[9px] text-slate-400 truncate">${item.reason || ''}</span>
+          </div>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    function applyLastAiProposal(silentToast = false) {
+      if (!lastAiProposal) return;
+
+      let appliedHours = 0;
+      const schedule = lastAiProposal.hourlySchedule || [];
+      schedule.forEach(item => {
+        const h = parseInt(item.hour, 10);
+        if (isNaN(h) || h < 6 || h > 23) return;
+        const existing = state.planner.hours[h];
+        if (existing && existing.locked) return; // Don't overwrite locked past hours
+
+        let goalId = null;
+        let dailyId = null;
+
+        if (item.sourceType === 'goal' && item.linkedId) {
+          const foundGoal = state.goalTasks.find(g => g.id === item.linkedId && !g.completed);
+          if (foundGoal) goalId = foundGoal.id;
+        } else if (item.sourceType === 'daily' && item.linkedId) {
+          const foundDaily = state.tasks.find(t => t.id === item.linkedId && !t.completed);
+          if (foundDaily) {
+            dailyId = foundDaily.id;
+            goalId = foundDaily.goalId || null;
+          }
+        } else {
+          // Fuzzy match by title if linkedId wasn't exact
+          const matchGoal = state.goalTasks.find(g => !g.completed && item.taskText.toLowerCase().includes(g.text.toLowerCase()));
+          if (matchGoal) goalId = matchGoal.id;
+          const matchDaily = state.tasks.find(t => !t.completed && item.taskText.toLowerCase().includes(t.text.toLowerCase()));
+          if (matchDaily) {
+            dailyId = matchDaily.id;
+            if (!goalId) goalId = matchDaily.goalId || null;
+          }
+        }
+
+        state.planner.hours[h] = {
+          text: item.taskText,
+          goalId: goalId,
+          dailyId: dailyId,
+          productiveMs: existing ? (existing.productiveMs || 0) : 0,
+          locked: false
+        };
+        appliedHours++;
+      });
+
+      // Add any new suggested daily tasks if not already present
+      const newDailies = lastAiProposal.newDailyTasks || [];
+      newDailies.forEach(nt => {
+        if (!nt.text) return;
+        const exists = state.tasks.some(t => !t.completed && t.text.toLowerCase() === nt.text.toLowerCase());
+        if (!exists) {
+          const prio = ['low', 'medium', 'high'].includes((nt.priority || '').toLowerCase()) ? nt.priority.toLowerCase() : 'medium';
+          state.tasks.unshift({
+            id: crypto.randomUUID(),
+            text: nt.text,
+            priority: prio,
+            goalId: null,
+            completed: false,
+            createdAt: new Date().toISOString()
+          });
+        }
+      });
+
+      saveState();
+      renderTasks();
+      updateDashboard();
+      renderAiView();
+      playSynthSound('congrats');
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      showFeedbackToast(`AI scheduled ${appliedHours} hour slots into your Hourly Planner!`, "success");
     }
 
     // Deducts elapsed ms from Master Goal Task's remainingMs
