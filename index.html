@@ -4,19 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
-  <!-- PWA Meta Tags added for strict Mobile & iOS installation -->
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PickFlow">
   
-  <!-- Link to External PWA Files -->
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.svg">
   
   <title>PickFlow - Ultimate Task Picker & Planner</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -32,13 +29,11 @@
     }
   </script>
 
-  <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -108,13 +103,12 @@
     }
   </style>
 </head>
-<body class="flex justify-center items-start overflow-x-hidden overflow-y-auto w-full">
+<body class="flex justify-center items-start overflow-y-auto w-full">
 
-  <!-- WRAPPER FOR ALL VIEWS -->
-  <div class="w-full max-w-md flex flex-col p-3.5 sm:p-6 pb-28 min-h-screen relative overflow-x-hidden">
+  <div class="w-full max-w-md flex flex-col p-4 sm:p-6 pb-28 min-h-screen relative">
     
     <!-- HEADER -->
-    <header class="flex justify-between items-center py-2 mb-5">
+    <header class="flex justify-between items-center py-2 mb-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
           <i class="fa-solid fa-wand-magic-sparkles text-lg text-white"></i>
@@ -126,7 +120,7 @@
       </div>
       
       <div class="flex gap-2">
-        <button id="pwaInstallBtn" class="text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+        <button id="pwaInstallBtn" class="hidden text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
           <i class="fa-solid fa-download"></i> Install
         </button>
         <button onclick="toggleAudio()" id="audioToggleBtn" class="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-300 hover:text-white transition">
@@ -139,7 +133,6 @@
     <!-- VIEW 1: RANDOM PICKER & HISTORY                -->
     <!-- ============================================== -->
     <div id="viewPicker" class="flex flex-col gap-5">
-      <!-- METRICS PANEL -->
       <div class="glass-card rounded-2xl p-4 grid grid-cols-3 gap-2 text-center">
         <div class="border-r border-slate-700/50">
           <span class="block text-xs text-slate-400">Pending</span>
@@ -155,7 +148,6 @@
         </div>
       </div>
 
-      <!-- MAIN RANDOMIZER WHEEL -->
       <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden group">
         <div class="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -175,51 +167,46 @@
         </button>
       </div>
 
-      <!-- ADD TASK INTERFACE -->
       <div class="glass-card rounded-2xl p-4">
         <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-          <i class="fa-solid fa-plus text-blue-400"></i> Create Task & Expected Time
+          <i class="fa-solid fa-bolt text-blue-400"></i> Add Daily Task
         </h2>
         <form id="taskForm" onsubmit="handleAddTask(event)" class="flex flex-col gap-3">
           <div class="flex gap-1.5 sm:gap-2 w-full">
-            <input type="text" id="taskInput" placeholder="Task description..." required maxlength="80"
+            <select id="dailyGoalSelect" class="glass-input flex-1 min-w-0 px-2.5 py-2.5 rounded-xl text-xs text-emerald-300 focus:outline-none truncate">
+              <option value="">-- Optional: Link a Master Timer Task --</option>
+            </select>
+          </div>
+          <div class="flex gap-1.5 sm:gap-2 w-full">
+            <input type="text" id="taskInput" placeholder="Daily task description..." required maxlength="80"
                    class="glass-input flex-1 min-w-0 px-3 py-3 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
-            <div class="relative flex items-center w-20 sm:w-24 flex-shrink-0">
-              <input type="number" id="taskHoursInput" placeholder="Hrs" min="0.1" max="100" step="0.1" value="1" required
-                     class="glass-input w-full pl-2.5 pr-7 py-3 rounded-xl text-sm text-emerald-400 font-mono font-bold focus:outline-none">
-              <span class="absolute right-2 text-[9px] font-bold text-slate-400 pointer-events-none">HRS</span>
-            </div>
-            <button type="submit" class="w-11 h-11 sm:w-12 sm:h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-blue-500/20 flex-shrink-0">
+            <button type="submit" class="w-11 h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-blue-500/20 flex-shrink-0">
               <i class="fa-solid fa-plus text-lg"></i>
             </button>
           </div>
+          
           <div class="flex flex-wrap items-center justify-between gap-2 mt-1">
             <div class="flex gap-1.5" id="prioritySelector">
               <button type="button" onclick="setPriority('low')" data-val="low" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800">Low</button>
               <button type="button" onclick="setPriority('medium')" data-val="medium" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 transition">Medium</button>
               <button type="button" onclick="setPriority('high')" data-val="high" class="prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800">High</button>
             </div>
-            <span class="text-[10px] text-slate-400 italic">Time spent deducts from Hrs!</span>
+            <span class="text-[10px] text-slate-400 italic">Ticking completes for Today!</span>
           </div>
         </form>
       </div>
 
-      <!-- TASK LIST SECTION (PENDING) -->
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
-        <div class="flex justify-between items-center mb-1">
-          <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
-            <i class="fa-solid fa-list-check text-blue-400"></i> Active Backlog
-          </h2>
-          <span class="text-[10px] text-slate-400">Tap <i class="fa-solid fa-play text-emerald-400 mx-0.5"></i> to work directly</span>
-        </div>
+        <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2 mb-1">
+          <i class="fa-solid fa-list-check text-blue-400"></i> Active Daily Backlog
+        </h2>
         <div id="taskList" class="max-h-72 overflow-y-auto flex flex-col gap-2.5 pr-1 min-h-[10px]"></div>
       </div>
 
-      <!-- HISTORY SECTION (COMPLETED) -->
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 opacity-90">
         <div class="flex justify-between items-center mb-1">
           <h2 class="text-sm font-semibold text-slate-400 flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-emerald-500"></i> Completed History
+            <i class="fa-solid fa-clock-rotate-left text-emerald-500"></i> Completed Today
           </h2>
           <button onclick="clearCompletedTasks()" class="text-[10px] text-slate-500 hover:text-red-400 transition flex items-center gap-1 border border-slate-800 px-2 py-1 rounded">
             <i class="fa-solid fa-broom"></i> Clear
@@ -233,7 +220,7 @@
         <div class="flex justify-between items-center mb-1">
           <div>
             <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
-              <i class="fa-brands fa-github text-slate-200"></i> Weekly Contribution Grid
+              <i class="fa-brands fa-github text-slate-200"></i> Contribution Grid
             </h2>
           </div>
           <span id="weeklyCount" class="text-xs bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold">0 Tasks Done</span>
@@ -242,7 +229,7 @@
           <template id="dayCellTemplate">
             <div class="flex flex-col items-center gap-2">
               <span class="text-[10px] font-medium text-slate-400 uppercase tracking-wider day-label">Mon</span>
-              <div class="git-box w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 cursor-pointer relative" onclick="triggerConfettiOnDayBox()">
+              <div class="git-box w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 cursor-pointer relative">
                 <span class="text-[10px] font-bold text-slate-200 count-badge">0</span>
               </div>
             </div>
@@ -253,25 +240,74 @@
     </div>
 
     <!-- ============================================== -->
-    <!-- VIEW 2: HOURLY DAY PLANNER                     -->
+    <!-- VIEW 2: MASTER TASK TIMERS (GOALS)             -->
+    <!-- ============================================== -->
+    <div id="viewTimers" class="hidden flex-col gap-5 w-full">
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 border-emerald-500/30">
+        <div class="flex justify-between items-center">
+          <h2 class="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+            <i class="fa-solid fa-stopwatch text-emerald-400"></i> Create Master Task Timer
+          </h2>
+          <span class="text-[10px] bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded font-bold border border-emerald-500/30">Auto-Syncs</span>
+        </div>
+        <p class="text-[10px] text-slate-400 leading-snug">
+          Create long-term multi-hour tasks here. Work on them directly, or link them to your <strong>Daily</strong>, <strong>Hourly</strong>, or <strong>Weekly</strong> schedules. Time spent syncs back here!
+        </p>
+
+        <form onsubmit="handleAddGoalTask(event)" class="flex flex-col gap-2.5 mt-1">
+          <div class="flex gap-1.5 sm:gap-2 w-full">
+            <input type="text" id="goalTaskInput" placeholder="Master task name..." required maxlength="80"
+                   class="glass-input flex-1 min-w-0 px-3 py-2.5 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
+            <div class="relative flex items-center w-24 flex-shrink-0">
+              <input type="number" id="goalTaskHoursInput" placeholder="Hrs" min="0.1" max="500" step="0.1" value="5" required
+                     class="glass-input w-full pl-2.5 pr-7 py-2.5 rounded-xl text-xs text-emerald-400 font-mono font-bold focus:outline-none">
+              <span class="absolute right-2 text-[9px] font-bold text-slate-400 pointer-events-none">HRS</span>
+            </div>
+            <button type="submit" class="w-10 h-10 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-emerald-500/20 flex-shrink-0 font-black">
+              <i class="fa-solid fa-plus text-sm"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-bars-progress text-blue-400"></i> Active Task Timers
+          </h2>
+          <span id="activeGoalsCount" class="text-[10px] text-slate-400 font-semibold">0 Active</span>
+        </div>
+        <div id="goalTasksList" class="flex flex-col gap-3 min-h-[80px]"></div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 opacity-85">
+        <h2 class="text-sm font-semibold text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-trophy text-amber-400"></i> Fully Conquered Timers
+        </h2>
+        <div id="completedGoalsList" class="flex flex-col gap-2 min-h-[20px]"></div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VIEW 3: HOURLY DAY PLANNER                     -->
     <!-- ============================================== -->
     <div id="viewPlanner" class="hidden flex-col gap-5 w-full">
       <div class="glass-card rounded-2xl p-5 relative overflow-hidden shadow-lg border-emerald-500/30">
         <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
         <div class="flex justify-between items-center mb-3">
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 relative z-10">
             <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full flex items-center justify-center text-white text-xl shadow-lg shadow-emerald-500/40 font-black border-2 border-slate-900" id="levelIconBadge">1</div>
             <div class="flex flex-col">
               <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest leading-none">Productivity Rank</span>
               <span class="text-xl font-black text-white leading-tight">Level <span id="rankLevelDisplay">1</span></span>
             </div>
           </div>
-          <div class="text-right">
+          <div class="text-right relative z-10">
             <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">Total Credits</span>
             <span class="text-xl font-mono font-bold text-amber-400" id="totalCreditsDisplay">0 <i class="fa-solid fa-coins text-sm ml-1"></i></span>
           </div>
         </div>
-        <div class="w-full">
+        <div class="w-full relative z-10">
           <div class="flex justify-between text-[10px] font-medium text-slate-400 mb-1">
             <span>Progress to Next Rank</span>
             <span id="rankProgressText">0 / 2000 XP</span>
@@ -283,96 +319,87 @@
       </div>
 
       <div class="text-[10px] text-slate-400 text-center px-4 -mt-2 mb-1 leading-snug">
-        Assign backlog tasks or custom tasks to any hour. Active timer minutes <strong class="text-blue-400">automatically deduct</strong> from your task's expected hours and earn <strong class="text-emerald-400">+1 XP/min</strong>!
+        Schedule tasks per hour. Earn <strong class="text-emerald-400">+1 Credit</strong> per active minute. Miss a scheduled task entirely? Lose <strong class="text-red-400">-60 Credits</strong>.
       </div>
 
       <div class="glass-card rounded-2xl p-3 flex flex-col gap-2 relative" id="hourlyListContainer"></div>
     </div>
 
     <!-- ============================================== -->
-    <!-- VIEW 3: WEEKLY PLAN & REWARDS GAMIFICATION     -->
+    <!-- VIEW 4: WEEKLY PLAN & REWARDS GAMIFICATION     -->
     <!-- ============================================== -->
     <div id="viewWeekly" class="hidden flex-col gap-5 w-full">
-      
-      <!-- Weekly Tasks Builder -->
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
         <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2 mb-1">
-          <i class="fa-solid fa-calendar-days text-purple-400"></i> Weekly Task & Hour Planner
+          <i class="fa-solid fa-calendar-days text-purple-400"></i> Weekly Schedule
         </h2>
-        <p class="text-[10px] text-slate-400 mb-1 leading-snug">Plan tasks with expected hours for the week. They auto-inject into your active backlog on their scheduled day, or tap <strong class="text-purple-400">Add to Today</strong> to start working now!</p>
+        <p class="text-[10px] text-slate-400 mb-1 leading-snug">Tasks auto-inject into Today's Backlog on their day!</p>
         
-        <!-- Day Selector Pills -->
-        <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x scrollbar-hide" id="weeklyDaySelector">
-          <!-- Populated by JS -->
-        </div>
+        <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x scrollbar-hide" id="weeklyDaySelector"></div>
 
-        <form onsubmit="handleAddWeeklyTask(event)" class="flex gap-1.5 sm:gap-2 mt-1 w-full">
-          <input type="text" id="weeklyTaskInput" placeholder="Plan task for selected day..." required maxlength="80"
-                 class="glass-input flex-1 min-w-0 px-3 py-2.5 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
-          <div class="relative flex items-center w-20 flex-shrink-0">
-            <input type="number" id="weeklyTaskHoursInput" placeholder="Hrs" min="0.1" max="100" step="0.1" value="1" required
-                   class="glass-input w-full pl-2 pr-6 py-2.5 rounded-xl text-xs text-purple-400 font-mono font-bold focus:outline-none">
-            <span class="absolute right-1.5 text-[9px] font-bold text-slate-400 pointer-events-none">HRS</span>
+        <form onsubmit="handleAddWeeklyTask(event)" class="flex flex-col gap-2 mt-1">
+          <select id="weeklyGoalSelect" class="glass-input flex-1 min-w-0 px-2.5 py-2 rounded-xl text-xs text-emerald-300 focus:outline-none truncate">
+            <option value="">-- Optional: Link a Master Timer Task --</option>
+          </select>
+          <div class="flex gap-1.5 sm:gap-2">
+            <input type="text" id="weeklyTaskInput" placeholder="Plan a task..." required maxlength="80"
+                   class="glass-input flex-1 min-w-0 px-3 py-2.5 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
+            <button type="submit" class="w-10 h-10 bg-purple-600 hover:bg-purple-500 text-white rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-purple-500/20 flex-shrink-0">
+              <i class="fa-solid fa-plus text-sm"></i>
+            </button>
           </div>
-          <button type="submit" class="w-10 h-10 bg-purple-600 hover:bg-purple-500 text-white rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-purple-500/20 flex-shrink-0">
-            <i class="fa-solid fa-plus text-sm"></i>
-          </button>
         </form>
 
-        <div id="weeklyTaskList" class="max-h-60 overflow-y-auto flex flex-col gap-2 pr-1 min-h-[100px] mt-2 border-t border-slate-800/80 pt-3">
-           <!-- Populated by JS -->
-        </div>
+        <div id="weeklyTaskList" class="max-h-60 overflow-y-auto flex flex-col gap-2 pr-1 min-h-[100px] mt-2 border-t border-slate-800/80 pt-3"></div>
       </div>
 
-      <!-- Reward System -->
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
         <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        
         <div class="flex justify-between items-center mb-1">
-          <h2 class="text-sm font-semibold text-amber-400 flex items-center gap-2">
-            <i class="fa-solid fa-gift"></i> Task & Daily Rewards
+          <h2 class="text-sm font-semibold text-amber-400 flex items-center gap-2 relative z-10">
+            <i class="fa-solid fa-gift"></i> Daily Rewards
           </h2>
-          <span id="rewardCountTxt" class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-md font-bold border border-amber-500/30">0/7</span>
+          <span id="rewardCountTxt" class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-md font-bold border border-amber-500/30 relative z-10">0/7</span>
         </div>
-        <p class="text-[10px] text-slate-400 leading-snug">Add up to 7 rewards. Fully completing a task's expected hours OR clearing your daily backlog unlocks a random reward!</p>
+        <p class="text-[10px] text-slate-400 leading-snug relative z-10">Clear your entire daily active backlog to randomly unlock one reward!</p>
         
-        <form onsubmit="handleAddReward(event)" class="flex gap-2">
+        <form onsubmit="handleAddReward(event)" class="flex gap-2 relative z-10">
           <input type="text" id="rewardInput" placeholder="E.g., Watch 1 anime episode..." required maxlength="60"
-                 class="glass-input flex-1 px-3 py-2 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
-          <button type="submit" class="w-9 h-9 bg-amber-600 hover:bg-amber-500 text-slate-900 rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-amber-500/20 font-black">
+                 class="glass-input flex-1 min-w-0 px-3 py-2 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
+          <button type="submit" class="w-9 h-9 bg-amber-600 hover:bg-amber-500 text-slate-900 rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-amber-500/20 font-black flex-shrink-0">
             <i class="fa-solid fa-plus text-xs"></i>
           </button>
         </form>
 
-        <div id="rewardsList" class="flex flex-col gap-2 mt-2">
-           <!-- Populated by JS -->
-        </div>
+        <div id="rewardsList" class="flex flex-col gap-2 mt-2 relative z-10"></div>
       </div>
-
     </div>
-
   </div>
 
   <!-- FIXED BOTTOM NAVIGATION BAR -->
   <nav class="fixed bottom-0 left-0 w-full z-40 pb-safe bg-slate-950/90 backdrop-blur-xl border-t border-slate-800">
-    <div class="max-w-md mx-auto px-2 flex justify-between">
-      <button onclick="switchTab('picker')" id="navPickerBtn" class="flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition nav-active group">
-        <i class="fa-solid fa-wand-magic-sparkles text-xl group-active:scale-90 transition-transform"></i>
-        <span class="text-[10px] font-bold tracking-wide">Tasks & Pick</span>
+    <div class="max-w-md mx-auto px-1 flex justify-between">
+      <button onclick="switchTab('picker')" id="navPickerBtn" class="flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group">
+        <i class="fa-solid fa-wand-magic-sparkles text-lg group-active:scale-90 transition-transform"></i>
+        <span class="text-[10px] font-bold tracking-wide">Daily</span>
       </button>
-      <button onclick="switchTab('planner')" id="navPlannerBtn" class="flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition group hover:text-blue-400">
-        <i class="fa-regular fa-clock text-xl group-active:scale-90 transition-transform"></i>
+      <button onclick="switchTab('timers')" id="navTimersBtn" class="flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-emerald-400">
+        <i class="fa-solid fa-stopwatch text-lg group-active:scale-90 transition-transform"></i>
+        <span class="text-[10px] font-bold tracking-wide">Timers</span>
+      </button>
+      <button onclick="switchTab('planner')" id="navPlannerBtn" class="flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-blue-400">
+        <i class="fa-regular fa-clock text-lg group-active:scale-90 transition-transform"></i>
         <span class="text-[10px] font-bold tracking-wide">Hourly</span>
       </button>
-      <button onclick="switchTab('weekly')" id="navWeeklyBtn" class="flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition group hover:text-purple-400">
-        <i class="fa-solid fa-calendar-days text-xl group-active:scale-90 transition-transform"></i>
-        <span class="text-[10px] font-bold tracking-wide">Weekly & Rewards</span>
+      <button onclick="switchTab('weekly')" id="navWeeklyBtn" class="flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-purple-400">
+        <i class="fa-solid fa-calendar-days text-lg group-active:scale-90 transition-transform"></i>
+        <span class="text-[10px] font-bold tracking-wide">Weekly</span>
       </button>
     </div>
   </nav>
 
   <!-- ============================================== -->
-  <!-- MODAL: PICKER CONGRATS / WORK TIMER            -->
+  <!-- MODAL: PICKER CONGRATS / TIMER                 -->
   <!-- ============================================== -->
   <div id="modalOverlay" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="glass-card rounded-3xl p-6 w-full max-w-sm text-center border-slate-700/50 transform scale-90 opacity-0 transition-all duration-300 flex flex-col items-center shadow-2xl relative overflow-hidden" id="modalCard">
@@ -380,34 +407,34 @@
       <div class="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl mb-2 shadow-lg shadow-emerald-500/10 animate-bounce">
         <i class="fa-solid fa-bolt"></i>
       </div>
-      <h3 class="text-[10px] text-emerald-400 uppercase tracking-widest font-bold mb-0.5">Active Focus Session</h3>
+      <h3 class="text-[10px] text-emerald-400 uppercase tracking-widest font-bold mb-0.5">Focus Session</h3>
       <h2 class="text-xl font-black text-white tracking-tight mb-3">Work on Task!</h2>
       
       <div class="w-full bg-slate-950/80 border border-slate-800 rounded-2xl p-4 mb-3 shadow-inner">
         <div class="flex justify-between items-center mb-2">
           <span id="modalTaskPriority" class="text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Medium Priority</span>
-          <span id="modalTaskRemainingBadge" class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">1h 0m left</span>
+          <span id="modalTaskRemainingBadge" class="text-[10px] font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Session</span>
         </div>
         <p id="modalTaskText" class="text-base font-bold text-slate-100 break-words leading-snug text-left mb-3"></p>
         
-        <!-- Overall Task Expected Hours Progress -->
-        <div class="w-full bg-slate-900 rounded-full h-2 border border-slate-800 overflow-hidden">
-          <div id="modalTaskProgressBar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full transition-all duration-300" style="width: 0%"></div>
-        </div>
-        <div class="flex justify-between text-[9px] text-slate-400 mt-1 font-medium">
-          <span id="modalTaskSpentTxt">0m spent</span>
-          <span id="modalTaskTotalTxt">Goal: 1h</span>
+        <div id="modalGoalProgressSection" class="w-full">
+          <div class="w-full bg-slate-900 rounded-full h-2 border border-slate-800 overflow-hidden">
+            <div id="modalTaskProgressBar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-[9px] text-slate-400 mt-1 font-medium">
+            <span id="modalTaskSpentTxt">0m spent</span>
+            <span id="modalTaskTotalTxt">Total Timer</span>
+          </div>
         </div>
       </div>
 
-      <!-- Session Timer -->
       <div class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl p-3 mb-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-emerald-400 shadow-inner">
             <i class="fa-solid fa-hourglass-half"></i>
           </div>
           <div class="flex flex-col items-start">
-            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Session Timer (Deducts Time)</span>
+            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Session Timer</span>
             <span id="pickerTimerDisplay" class="text-2xl font-mono font-black text-slate-100 leading-none">30:00</span>
           </div>
         </div>
@@ -418,11 +445,11 @@
 
       <div class="flex flex-col gap-2 w-full">
         <button onclick="handleModalAction('complete')" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 text-sm">
-          <i class="fa-solid fa-check-double"></i> Complete Full Task Now!
+          <i class="fa-solid fa-check"></i> Mark Complete for Today!
         </button>
         <div class="grid grid-cols-2 gap-2">
           <button onclick="handleModalAction('keep')" class="py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-semibold rounded-lg text-xs transition">
-            <i class="fa-solid fa-pause mr-1"></i> Save Progress
+            <i class="fa-solid fa-pause mr-1"></i> Pause Timer
           </button>
           <button onclick="handleModalAction('close')" class="py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-semibold rounded-lg text-xs transition">
             <i class="fa-solid fa-times mr-1"></i> Close
@@ -438,18 +465,14 @@
   <div id="rewardModalOverlay" class="fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-lg hidden flex items-center justify-center p-4">
     <div class="glass-card rounded-3xl p-8 w-full max-w-sm text-center border-amber-500/50 transform scale-50 opacity-0 transition-all duration-500 flex flex-col items-center shadow-[0_0_50px_rgba(245,158,11,0.2)] relative overflow-hidden" id="rewardModalCard">
       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent opacity-60 animate-pulse pointer-events-none"></div>
-      
       <div class="w-20 h-20 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center text-4xl mb-4 shadow-[0_0_30px_rgba(245,158,11,0.4)] animate-bounce relative z-10">
         <i class="fa-solid fa-gift"></i>
       </div>
-      
-      <h3 class="text-xs text-amber-400 uppercase tracking-widest font-black mb-1 relative z-10" id="rewardModalSubtitle">Task Goal Conquered!</h3>
+      <h3 class="text-xs text-amber-400 uppercase tracking-widest font-black mb-1 relative z-10">Day Conquered!</h3>
       <h2 class="text-3xl font-black text-white tracking-tight mb-5 relative z-10">Reward Unlocked!</h2>
-      
       <div class="w-full bg-slate-900 border-2 border-amber-500/40 rounded-2xl p-5 mb-6 shadow-inner relative z-10 transform -rotate-1">
         <p id="unlockedRewardText" class="text-lg font-black text-amber-400 break-words leading-snug tracking-wide"></p>
       </div>
-
       <button onclick="closeRewardModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 font-black tracking-wide rounded-xl flex items-center justify-center gap-2 transition shadow-[0_0_20px_rgba(245,158,11,0.3)] text-sm relative z-10">
         CLAIM & CONTINUE <i class="fa-solid fa-arrow-right"></i>
       </button>
@@ -459,19 +482,18 @@
   <div class="hidden" id="audioContainer"></div>
 
   <script>
-    // ==========================================
-    // GLOBALS & STATE INITIALIZATION
-    // ==========================================
     const DEFAULT_TIMER_MS = 30 * 60 * 1000;
     const PLANNER_HOUR_LIMIT_MS = 60 * 60 * 1000;
     const CREDITS_PER_LEVEL = 2000;
     
     let localPickerInterval = null;
-    let selectedWeeklyDay = "Mon";
+    let selectedWeeklyDay = "Mon"; 
     const dayNamesList = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     let state = {
-      tasks: [],
+      tasks: [], // Daily backlog tasks: { id, text, priority, goalId, completed, createdAt }
+      goalTasks: [], // Master Task Timers: { id, text, expectedMs, remainingMs, spentMs, completed }
+      activeGoalTimer: { goalId: null, isRunning: false, lastTickMs: null },
       currentDate: "", 
       currentPickId: null,
       selectedPriority: 'medium',
@@ -486,12 +508,12 @@
         remainingTime: DEFAULT_TIMER_MS
       },
       planner: {
-        hours: {}, // { h: { text, taskId, productiveMs, locked } }
+        hours: {}, 
         activeTimer: { hour: null, lastTickMs: null, isRunning: false }
       },
       gamification: { credits: 0 },
       weeklyPlan: { Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [] },
-      rewards: []
+      rewards: [] 
     };
 
     function formatDate(date) {
@@ -499,6 +521,15 @@
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    function formatHMSDisplay(ms) {
+      if (ms <= 0) return "00:00:00";
+      const totalSeconds = Math.ceil(ms / 1000);
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
     function formatTimeDisplay(ms) {
@@ -509,7 +540,6 @@
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    // Helper to format milliseconds into readable hours/mins (e.g. "2h 15m" or "45m 10s")
     function formatDurationBadge(ms) {
       if (ms <= 0) return "0m";
       const totalSeconds = Math.ceil(ms / 1000);
@@ -521,16 +551,15 @@
       return `${s}s`;
     }
 
-    function ensureTaskTimeProps(t) {
-      const defaultMs = (t.expectedHours || 1) * 3600000;
-      if (typeof t.expectedMs !== 'number') t.expectedMs = defaultMs;
-      if (typeof t.remainingMs !== 'number') t.remainingMs = t.completed ? 0 : t.expectedMs;
-      if (typeof t.spentMs !== 'number') t.spentMs = 0;
-      return t;
+    function ensureGoalProps(g) {
+      if (typeof g.expectedMs !== 'number') g.expectedMs = 3600000;
+      if (typeof g.remainingMs !== 'number') g.remainingMs = g.completed ? 0 : g.expectedMs;
+      if (typeof g.spentMs !== 'number') g.spentMs = 0;
+      return g;
     }
 
     function loadState() {
-      const saved = localStorage.getItem('pickflow_v8_data') || localStorage.getItem('pickflow_v7_data');
+      const saved = localStorage.getItem('pickflow_v11_data');
       const todayStr = formatDate(new Date());
 
       if (saved) {
@@ -543,69 +572,36 @@
           if (!state.pickerTimer) state.pickerTimer = { activeTaskId: null, isRunning: false, targetTime: null, lastTickMs: null, remainingTime: DEFAULT_TIMER_MS };
           if (!state.weeklyPlan) state.weeklyPlan = { Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [] };
           if (!state.rewards) state.rewards = [];
+          if (!state.goalTasks) state.goalTasks = [];
+          if (!state.activeGoalTimer) state.activeGoalTimer = { goalId: null, isRunning: false, lastTickMs: null };
 
-          // Upgrade all tasks to have expectedMs & remainingMs
-          state.tasks = (state.tasks || []).map(ensureTaskTimeProps);
-          Object.keys(state.weeklyPlan).forEach(day => {
-            state.weeklyPlan[day] = (state.weeklyPlan[day] || []).map(ensureTaskTimeProps);
-          });
+          state.goalTasks = state.goalTasks.map(ensureGoalProps);
 
           if (state.currentDate !== todayStr) {
-            handleMidnightRollover(todayStr);
+            handleMidnightRollover(todayStr); 
           }
         } catch (e) { console.error("Failed to parse saved state", e); }
       } else {
         state.currentDate = todayStr;
-        state.tasks = [
-          ensureTaskTimeProps({
-            id: crypto.randomUUID(),
-            text: "📝 Complete project architecture & docs",
-            priority: 'high',
-            expectedHours: 2,
-            expectedMs: 2 * 3600000,
-            remainingMs: 2 * 3600000,
-            spentMs: 0,
-            completed: false,
-            createdAt: new Date().toISOString()
-          })
-        ];
+        const initGoalId = crypto.randomUUID();
+        state.goalTasks = [ensureGoalProps({
+          id: initGoalId, text: "🚀 Launch Project", expectedMs: 5 * 3600000, remainingMs: 5 * 3600000, spentMs: 0, completed: false, createdAt: new Date().toISOString()
+        })];
+        state.tasks = [{ id: crypto.randomUUID(), text: "Review files", priority: 'medium', goalId: initGoalId, completed: false, createdAt: new Date().toISOString() }];
       }
 
       selectedWeeklyDay = dayNamesList[new Date().getDay()];
 
+      handleBackgroundGoalTimerRestoration();
       handleBackgroundPickerTimerRestoration();
       handleBackgroundPlannerRestoration();
       saveState();
     }
 
     function saveState() {
-      localStorage.setItem('pickflow_v8_data', JSON.stringify(state));
+      localStorage.setItem('pickflow_v11_data', JSON.stringify(state));
     }
 
-    // ==========================================
-    // CORE TIME DEDUCTION ENGINE
-    // ==========================================
-    // Deducts elapsed ms from a task's remainingMs. Auto-completes if remainingMs hits 0!
-    function deductTimeFromTask(taskId, deltaMs) {
-      if (!taskId || deltaMs <= 0) return false;
-      const task = state.tasks.find(t => t.id === taskId);
-      if (!task || task.completed) return false;
-
-      ensureTaskTimeProps(task);
-      task.spentMs = (task.spentMs || 0) + deltaMs;
-      task.remainingMs = Math.max(0, task.remainingMs - deltaMs);
-
-      if (task.remainingMs <= 0) {
-        // Task finished all its expected hours!
-        markTaskComplete(task.id, true, true);
-        return true; // Indicates task auto-completed
-      }
-      return false;
-    }
-
-    // ==========================================
-    // AUDIO ENGINE
-    // ==========================================
     let audioCtx = null;
     function playSynthSound(type) {
       if (!state.audioEnabled) return;
@@ -667,40 +663,6 @@
       saveState();
     }
 
-    // ==========================================
-    // TAB NAVIGATION
-    // ==========================================
-    function switchTab(tabId) {
-      playSynthSound('click');
-      const vPicker = document.getElementById('viewPicker');
-      const vPlanner = document.getElementById('viewPlanner');
-      const vWeekly = document.getElementById('viewWeekly');
-      const nPicker = document.getElementById('navPickerBtn');
-      const nPlanner = document.getElementById('navPlannerBtn');
-      const nWeekly = document.getElementById('navWeeklyBtn');
-
-      [nPicker, nPlanner, nWeekly].forEach(n => n.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition group hover:text-slate-300");
-      [vPicker, vPlanner, vWeekly].forEach(v => { v.classList.add('hidden'); v.classList.remove('flex'); });
-      
-      if (tabId === 'picker') {
-        vPicker.classList.remove('hidden'); vPicker.classList.add('flex');
-        nPicker.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition nav-active group";
-        renderTasks();
-        updateDashboard();
-      } else if (tabId === 'planner') {
-        vPlanner.classList.remove('hidden'); vPlanner.classList.add('flex');
-        nPlanner.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition nav-active group";
-        renderPlanner();
-      } else {
-        vWeekly.classList.remove('hidden'); vWeekly.classList.add('flex');
-        nWeekly.className = "flex-1 flex flex-col items-center justify-center py-4 gap-1 text-slate-500 transition nav-active group";
-        renderWeeklyView();
-      }
-    }
-
-    // ==========================================
-    // TOAST SYSTEM
-    // ==========================================
     function showFeedbackToast(msg, type = "info") {
       const toast = document.createElement('div');
       let icon = "fa-circle-info text-blue-400";
@@ -716,208 +678,225 @@
       setTimeout(() => { toast.remove(); }, 4000);
     }
 
-    // ==========================================
-    // REWARDS & WEEKLY PLAN LOGIC
-    // ==========================================
-    function renderWeeklyView() {
-      const dayContainer = document.getElementById('weeklyDaySelector');
-      dayContainer.innerHTML = '';
+    function switchTab(tabId) {
+      playSynthSound('click');
+      const views = ['viewPicker', 'viewTimers', 'viewPlanner', 'viewWeekly'];
+      const navs = ['navPickerBtn', 'navTimersBtn', 'navPlannerBtn', 'navWeeklyBtn'];
+
+      navs.forEach(n => document.getElementById(n).className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition group hover:text-slate-300");
+      views.forEach(v => { document.getElementById(v).classList.add('hidden'); document.getElementById(v).classList.remove('flex'); });
       
-      const realTodayStr = dayNamesList[new Date().getDay()];
+      populateGoalDropdowns();
 
-      dayNamesList.forEach(d => {
-        const isSelected = d === selectedWeeklyDay;
-        const isRealToday = d === realTodayStr;
-        const btn = document.createElement('button');
-        btn.onclick = () => { selectedWeeklyDay = d; playSynthSound('click'); renderWeeklyView(); };
-        btn.className = `day-btn snap-center flex flex-col items-center justify-center min-w-[50px] py-2 rounded-xl border transition ${isSelected ? 'active font-bold' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'}`;
-        btn.innerHTML = `<span class="text-xs uppercase">${d}</span>${isRealToday ? '<span class="text-[8px] mt-0.5 bg-blue-500 text-white px-1 rounded-sm leading-tight">TODAY</span>' : ''}`;
-        dayContainer.appendChild(btn);
-      });
-
-      const tasksContainer = document.getElementById('weeklyTaskList');
-      tasksContainer.innerHTML = '';
-      const list = state.weeklyPlan[selectedWeeklyDay] || [];
-      
-      if (list.length === 0) {
-        tasksContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 italic">No tasks planned for ${selectedWeeklyDay}.</div>`;
+      if (tabId === 'picker') {
+        document.getElementById('viewPicker').classList.remove('hidden'); document.getElementById('viewPicker').classList.add('flex');
+        document.getElementById('navPickerBtn').className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group";
+        renderTasks(); updateDashboard();
+      } else if (tabId === 'timers') {
+        document.getElementById('viewTimers').classList.remove('hidden'); document.getElementById('viewTimers').classList.add('flex');
+        document.getElementById('navTimersBtn').className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group";
+        renderGoalTasks();
+      } else if (tabId === 'planner') {
+        document.getElementById('viewPlanner').classList.remove('hidden'); document.getElementById('viewPlanner').classList.add('flex');
+        document.getElementById('navPlannerBtn').className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group";
+        renderPlanner();
       } else {
-        list.forEach(t => {
-          ensureTaskTimeProps(t);
-          let prioColor = t.priority === 'high' ? 'text-red-400' : (t.priority === 'low' ? 'text-slate-400' : 'text-blue-400');
-          const hrsText = formatDurationBadge(t.expectedMs);
-          const row = document.createElement('div');
-          row.className = "flex justify-between items-center bg-slate-900/50 p-2.5 rounded-xl border border-slate-800 gap-2";
-          row.innerHTML = `
-            <div class="flex flex-col min-w-0 flex-1">
-              <span class="text-xs text-slate-200 truncate font-medium">${t.text}</span>
-              <div class="flex items-center gap-2 mt-1">
-                <span class="text-[9px] uppercase ${prioColor} font-bold">${t.priority}</span>
-                <span class="text-[9px] font-mono bg-purple-500/15 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30"><i class="fa-regular fa-clock mr-1"></i>${hrsText}</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-              <button onclick="pushWeeklyTaskToToday('${t.id}')" title="Move to Today's Active Backlog" class="text-[10px] bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 border border-blue-500/30">
-                <i class="fa-solid fa-bolt"></i> Today
-              </button>
-              <button onclick="deleteWeeklyTask('${t.id}')" class="text-slate-500 hover:text-red-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
-            </div>
-          `;
-          tasksContainer.appendChild(row);
-        });
-      }
-
-      const rewardsContainer = document.getElementById('rewardsList');
-      rewardsContainer.innerHTML = '';
-      document.getElementById('rewardCountTxt').textContent = `${state.rewards.length}/7`;
-
-      if (state.rewards.length === 0) {
-        rewardsContainer.innerHTML = `<div class="text-[10px] text-slate-500 text-center italic py-2">No rewards added yet.</div>`;
-      } else {
-        state.rewards.forEach(r => {
-          const isUnlocked = r.unlocked;
-          const bgClass = isUnlocked ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-900/50 border-slate-800';
-          const iconHtml = isUnlocked ? `<i class="fa-solid fa-lock-open text-amber-400"></i>` : `<i class="fa-solid fa-lock text-slate-600"></i>`;
-          
-          const row = document.createElement('div');
-          row.className = `flex justify-between items-center p-3 rounded-xl border transition ${bgClass}`;
-          row.innerHTML = `
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-8 h-8 rounded-full bg-slate-950 flex items-center justify-center shadow-inner">
-                ${iconHtml}
-              </div>
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-bold ${isUnlocked ? 'text-amber-400' : 'text-slate-300'} truncate">${r.text}</span>
-                ${isUnlocked ? `<span class="text-[9px] text-amber-500/70">Unlocked on ${r.unlockedDate}</span>` : `<span class="text-[9px] text-slate-500">Locked - Complete task hours or clear backlog</span>`}
-              </div>
-            </div>
-            <button onclick="deleteReward('${r.id}')" class="text-slate-500 hover:text-red-400 p-2 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
-          `;
-          rewardsContainer.appendChild(row);
-        });
+        document.getElementById('viewWeekly').classList.remove('hidden'); document.getElementById('viewWeekly').classList.add('flex');
+        document.getElementById('navWeeklyBtn').className = "flex-1 flex flex-col items-center justify-center py-3.5 gap-1 text-slate-500 transition nav-active group";
+        renderWeeklyView();
       }
     }
 
-    function handleAddWeeklyTask(e) {
+    // Deducts elapsed ms from Master Goal Task's remainingMs
+    function syncTimeSpent({ goalId, deltaMs }) {
+      if (deltaMs <= 0 || !goalId) return false;
+      const goal = state.goalTasks.find(g => g.id === goalId);
+      if (!goal || goal.completed) return false;
+
+      ensureGoalProps(goal);
+      goal.spentMs = (goal.spentMs || 0) + deltaMs;
+      goal.remainingMs = Math.max(0, goal.remainingMs - deltaMs);
+
+      if (goal.remainingMs <= 0) {
+        goal.remainingMs = 0; goal.completed = true;
+        if (state.activeGoalTimer.goalId === goal.id) {
+          state.activeGoalTimer.isRunning = false;
+          state.activeGoalTimer.goalId = null;
+        }
+        playSynthSound('reward');
+        confetti({ particleCount: 180, spread: 100, origin: { y: 0.5 } });
+        saveState();
+        setTimeout(checkDailyRewardUnlock, 400); // Trigger reward when master goal finished!
+        return true; 
+      }
+      return false;
+    }
+
+    function populateGoalDropdowns() {
+      const activeGoals = state.goalTasks.filter(g => !g.completed);
+      const buildOpts = () => {
+        let html = `<option value="">-- Optional: Link a Master Timer Task --</option>`;
+        activeGoals.forEach(g => {
+          ensureGoalProps(g);
+          const shortTitle = g.text.length > 28 ? g.text.substring(0, 28) + '...' : g.text;
+          html += `<option value="${g.id}">⏱️ ${shortTitle} (${formatDurationBadge(g.remainingMs)} left)</option>`;
+        });
+        return html;
+      };
+
+      const dailySelect = document.getElementById('dailyGoalSelect');
+      if (dailySelect) { const p = dailySelect.value; dailySelect.innerHTML = buildOpts(); dailySelect.value = p; }
+      const weeklySelect = document.getElementById('weeklyGoalSelect');
+      if (weeklySelect) { const p = weeklySelect.value; weeklySelect.innerHTML = buildOpts(); weeklySelect.value = p; }
+    }
+
+    function handleAddGoalTask(e) {
       e.preventDefault();
-      const input = document.getElementById('weeklyTaskInput');
-      const hrsInput = document.getElementById('weeklyTaskHoursInput');
-      const text = input.value.trim();
-      const hrs = parseFloat(hrsInput.value) || 1;
+      const inp = document.getElementById('goalTaskInput');
+      const hrsInp = document.getElementById('goalTaskHoursInput');
+      const text = inp.value.trim(); const hrs = parseFloat(hrsInp.value) || 1;
       if (!text) return;
 
       const expectedMs = Math.round(hrs * 3600000);
-      const newTask = {
-        id: crypto.randomUUID(),
-        text,
-        priority: 'medium',
-        expectedHours: hrs,
-        expectedMs: expectedMs,
-        remainingMs: expectedMs,
-        spentMs: 0,
-        completed: false,
-        createdAt: new Date().toISOString()
-      };
-      state.weeklyPlan[selectedWeeklyDay].push(newTask);
+      state.goalTasks.unshift({
+        id: crypto.randomUUID(), text, expectedMs, remainingMs: expectedMs, spentMs: 0, completed: false, createdAt: new Date().toISOString()
+      });
+
+      inp.value = ''; hrsInp.value = '5';
+      playSynthSound('complete'); saveState(); renderGoalTasks(); populateGoalDropdowns();
+      showFeedbackToast("Master Task Timer created!", "success");
+    }
+
+    function deleteGoalTask(id) {
+      if (state.activeGoalTimer.goalId === id) { state.activeGoalTimer.isRunning = false; state.activeGoalTimer.goalId = null; }
+      state.goalTasks = state.goalTasks.filter(g => g.id !== id);
+      playSynthSound('click'); saveState(); renderGoalTasks(); populateGoalDropdowns(); renderTasks();
+    }
+
+    function toggleMasterGoalTimer(goalId) {
+      const gt = state.activeGoalTimer;
+      if (gt.isRunning && gt.goalId === goalId) {
+        gt.isRunning = false; gt.lastTickMs = null; playSynthSound('click');
+      } else {
+        gt.goalId = goalId; gt.isRunning = true; gt.lastTickMs = Date.now(); playSynthSound('tick');
+      }
+      saveState(); renderGoalTasks();
+    }
+
+    function handleBackgroundGoalTimerRestoration() {
+      const gt = state.activeGoalTimer;
+      if (!gt || !gt.isRunning || !gt.goalId || !gt.lastTickMs) return;
+      const goal = state.goalTasks.find(g => g.id === gt.goalId && !g.completed);
+      if (!goal) { gt.isRunning = false; gt.goalId = null; return; }
+      const now = Date.now(); const delta = Math.max(0, now - gt.lastTickMs);
+      gt.lastTickMs = now;
+      syncTimeSpent({ goalId: goal.id, deltaMs: delta });
+    }
+
+    function goalTimerTickLoop() {
+      const gt = state.activeGoalTimer;
+      if (!gt || !gt.isRunning || !gt.goalId) return;
+      const goal = state.goalTasks.find(g => g.id === gt.goalId && !g.completed);
+      if (!goal) { gt.isRunning = false; gt.goalId = null; return; }
       
-      input.value = '';
-      hrsInput.value = '1';
-      playSynthSound('complete'); saveState(); renderWeeklyView();
+      const now = Date.now();
+      const delta = gt.lastTickMs ? Math.max(0, now - gt.lastTickMs) : 0;
+      gt.lastTickMs = now;
+
+      const finished = syncTimeSpent({ goalId: goal.id, deltaMs: delta });
+      if (finished) {
+        showFeedbackToast(`Master Goal "${goal.text}" 100% completed!`, "success");
+      }
+
+      if (!document.getElementById('viewTimers').classList.contains('hidden')) renderGoalTasks();
+      if (!document.getElementById('viewPicker').classList.contains('hidden')) renderTasks();
     }
 
-    function pushWeeklyTaskToToday(id) {
-      const list = state.weeklyPlan[selectedWeeklyDay] || [];
-      const taskIndex = list.findIndex(t => t.id === id);
-      if (taskIndex === -1) return;
-
-      const [task] = list.splice(taskIndex, 1);
-      state.tasks.unshift(ensureTaskTimeProps(task));
-      playSynthSound('complete');
-      saveState();
-      renderWeeklyView();
-      renderTasks();
-      updateDashboard();
-      showFeedbackToast(`Moved "${task.text}" to Today's Active Backlog!`, "success");
+    function addGoalToToday(goalId) {
+      const goal = state.goalTasks.find(g => g.id === goalId);
+      if (!goal) return;
+      if (state.tasks.some(t => t.goalId === goalId && !t.completed)) {
+        showFeedbackToast("Already in Today's Backlog!", "info"); return;
+      }
+      state.tasks.unshift({ id: crypto.randomUUID(), text: goal.text, priority: 'high', goalId: goal.id, completed: false, createdAt: new Date().toISOString() });
+      playSynthSound('complete'); saveState(); renderTasks(); updateDashboard(); renderGoalTasks();
+      showFeedbackToast(`Added to Today's Backlog!`, "success");
     }
 
-    function deleteWeeklyTask(id) {
-      state.weeklyPlan[selectedWeeklyDay] = state.weeklyPlan[selectedWeeklyDay].filter(t => t.id !== id);
-      playSynthSound('click'); saveState(); renderWeeklyView();
-    }
+    function renderGoalTasks() {
+      const activeContainer = document.getElementById('goalTasksList');
+      const completedContainer = document.getElementById('completedGoalsList');
+      if (!activeContainer || !completedContainer) return;
+      activeContainer.innerHTML = ''; completedContainer.innerHTML = '';
 
-    function handleAddReward(e) {
-      e.preventDefault();
-      if (state.rewards.length >= 7) { showFeedbackToast("Maximum 7 rewards allowed!", "error"); return; }
-      
-      const input = document.getElementById('rewardInput');
-      const text = input.value.trim();
-      if (!text) return;
+      const activeGoals = state.goalTasks.filter(g => !g.completed);
+      const completedGoals = state.goalTasks.filter(g => g.completed);
+      document.getElementById('activeGoalsCount').textContent = `${activeGoals.length} Active`;
 
-      state.rewards.push({ id: crypto.randomUUID(), text, unlocked: false, unlockedDate: null });
-      input.value = '';
-      playSynthSound('complete'); saveState(); renderWeeklyView();
-    }
+      if (activeGoals.length === 0) {
+        activeContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 italic">No active task timers. Create one above!</div>`;
+      } else {
+        activeGoals.forEach(g => {
+          ensureGoalProps(g);
+          const isRunning = state.activeGoalTimer.isRunning && state.activeGoalTimer.goalId === g.id;
+          const pct = Math.min(100, Math.max(0, ((g.expectedMs - g.remainingMs) / g.expectedMs) * 100));
+          const inToday = state.tasks.some(t => t.goalId === g.id && !t.completed);
 
-    function deleteReward(id) {
-      state.rewards = state.rewards.filter(r => r.id !== id);
-      playSynthSound('click'); saveState(); renderWeeklyView();
-    }
+          const card = document.createElement('div');
+          card.className = `flex flex-col gap-2.5 p-3.5 rounded-2xl border transition-all ${isRunning ? 'bg-emerald-950/20 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.15)]' : 'bg-slate-900/70 border-slate-800'}`;
+          card.innerHTML = `
+            <div class="flex justify-between items-start gap-2">
+              <div class="flex flex-col min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-sm font-bold text-slate-100 truncate">${g.text}</span>
+                  ${inToday ? `<span class="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">In Today</span>` : ''}
+                </div>
+                <span class="text-[10px] text-slate-400 mt-0.5">Spent: <strong class="text-emerald-400">${formatDurationBadge(g.spentMs)}</strong> / Goal: <strong>${formatDurationBadge(g.expectedMs)}</strong> (${Math.round(pct)}%)</span>
+              </div>
+              <button onclick="deleteGoalTask('${g.id}')" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </div>
+            <div class="flex items-center justify-between bg-slate-950/80 border border-slate-800/90 rounded-xl px-3 py-2">
+              <div class="flex flex-col">
+                <span class="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Remaining Task Time</span>
+                <span class="text-lg font-mono font-black ${isRunning ? 'text-emerald-400' : 'text-slate-200'}">${formatHMSDisplay(g.remainingMs)}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="addGoalToToday('${g.id}')" title="Add to Today's Daily Backlog" class="px-2.5 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-[10px] font-bold transition border border-blue-500/30 flex items-center gap-1">
+                  <i class="fa-solid fa-calendar-day"></i> +Today
+                </button>
+                <button onclick="toggleMasterGoalTimer('${g.id}')" class="w-9 h-9 rounded-xl ${isRunning ? 'bg-amber-500 text-slate-950' : 'bg-emerald-600 hover:bg-emerald-500 text-white'} flex items-center justify-center transition active:scale-95 shadow-md">
+                  <i class="fa-solid ${isRunning ? 'fa-pause' : 'fa-play ml-0.5'} text-xs"></i>
+                </button>
+              </div>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-2 border border-slate-800 overflow-hidden">
+              <div class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full progress-fill" style="width: ${pct}%"></div>
+            </div>
+          `;
+          activeContainer.appendChild(card);
+        });
+      }
 
-    // ==========================================
-    // REWARD UNLOCK ALGORITHM
-    // ==========================================
-    function checkDailyRewardUnlock(fromFullTaskCompletion = false) {
-      const pending = state.tasks.filter(t => !t.completed);
-      const completed = state.tasks.filter(t => t.completed);
-      
-      // Unlock if user cleared all daily tasks OR finished a multi-hour task's full expected duration
-      if ((pending.length === 0 && completed.length > 0) || fromFullTaskCompletion) {
-        const todayStr = formatDate(new Date());
-        
-        const lockedRewards = state.rewards.filter(r => !r.unlocked);
-        if (lockedRewards.length === 0) return;
-
-        // If triggered by clearing backlog, cap at 1 per day unless it's a full task completion milestone
-        const alreadyUnlockedToday = state.rewards.some(r => r.unlockedDate === todayStr);
-        if (alreadyUnlockedToday && !fromFullTaskCompletion) return;
-
-        const luckyIndex = Math.floor(Math.random() * lockedRewards.length);
-        const rewardToUnlock = lockedRewards[luckyIndex];
-
-        rewardToUnlock.unlocked = true;
-        rewardToUnlock.unlockedDate = todayStr;
-        saveState();
-
-        triggerRewardModal(rewardToUnlock.text, fromFullTaskCompletion ? "Task Time Goal Conquered!" : "Daily Backlog Conquered!");
+      if (completedGoals.length === 0) {
+        completedContainer.innerHTML = `<div class="text-[10px] text-slate-600 italic">No master timers completed yet.</div>`;
+      } else {
+        completedGoals.forEach(g => {
+          ensureGoalProps(g);
+          const row = document.createElement('div');
+          row.className = "flex items-center justify-between p-2.5 rounded-xl border bg-slate-900/30 border-slate-800/50 text-slate-400";
+          row.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+              <span class="text-xs font-medium truncate line-through">${g.text}</span>
+              <span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">${formatDurationBadge(g.expectedMs)} Done</span>
+            </div>
+            <button onclick="deleteGoalTask('${g.id}')" class="text-slate-600 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+          `;
+          completedContainer.appendChild(row);
+        });
       }
     }
 
-    function triggerRewardModal(rewardText, subtitle = "Goal Conquered!") {
-      playSynthSound('reward');
-      confetti({ particleCount: 300, spread: 150, origin: { y: 0.5 }, colors: ['#f59e0b', '#fbbf24', '#ffffff'] });
-      
-      document.getElementById('rewardModalSubtitle').textContent = subtitle;
-      document.getElementById('unlockedRewardText').textContent = rewardText;
-      const overlay = document.getElementById('rewardModalOverlay');
-      const card = document.getElementById('rewardModalCard');
-      
-      overlay.classList.remove('hidden');
-      setTimeout(() => { card.classList.remove('scale-50', 'opacity-0'); card.classList.add('scale-100', 'opacity-100'); }, 50);
-      
-      if (!document.getElementById('viewWeekly').classList.contains('hidden')) { renderWeeklyView(); }
-    }
-
-    function closeRewardModal() {
-      playSynthSound('click');
-      const overlay = document.getElementById('rewardModalOverlay');
-      const card = document.getElementById('rewardModalCard');
-      card.classList.remove('scale-100', 'opacity-100'); card.classList.add('scale-50', 'opacity-0');
-      setTimeout(() => { overlay.classList.add('hidden'); }, 300);
-    }
-
-    // ==========================================
-    // CORE PICKER & TASK MANAGEMENT LOGIC
-    // ==========================================
     function setPriority(val) {
       state.selectedPriority = val;
       const badges = document.querySelectorAll('.prio-badge');
@@ -927,9 +906,7 @@
           if (val === 'low') badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-400 bg-slate-400/10 text-slate-300 transition';
           else if (val === 'medium') badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-400 transition';
           else if (val === 'high') badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 transition';
-        } else {
-          badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800';
-        }
+        } else { badge.className = 'prio-badge text-xs px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition hover:bg-slate-800'; }
       });
       playSynthSound('click');
     }
@@ -937,33 +914,21 @@
     function handleAddTask(e) {
       e.preventDefault();
       const input = document.getElementById('taskInput');
-      const hrsInput = document.getElementById('taskHoursInput');
+      const goalSel = document.getElementById('dailyGoalSelect');
       const text = input.value.trim();
-      const hrs = parseFloat(hrsInput.value) || 1;
+      const goalId = goalSel && goalSel.value ? goalSel.value : null;
       if (!text) return;
-
       checkMidnightRollover();
-      const expectedMs = Math.round(hrs * 3600000);
       state.tasks.unshift({
-        id: crypto.randomUUID(),
-        text: text,
-        priority: state.selectedPriority,
-        expectedHours: hrs,
-        expectedMs: expectedMs,
-        remainingMs: expectedMs,
-        spentMs: 0,
-        completed: false,
-        createdAt: new Date().toISOString()
+        id: crypto.randomUUID(), text, priority: state.selectedPriority, goalId, completed: false, createdAt: new Date().toISOString()
       });
-      input.value = '';
-      hrsInput.value = '1';
-      setPriority('medium');
-      playSynthSound('complete'); saveState(); renderTasks(); updateDashboard();
+      input.value = ''; if(goalSel) goalSel.value = ''; setPriority('medium');
+      playSynthSound('complete'); saveState(); renderTasks(); updateDashboard(); renderGoalTasks();
     }
 
     function deleteTask(id) {
       state.tasks = state.tasks.filter(t => t.id !== id);
-      playSynthSound('click'); saveState(); renderTasks(); updateDashboard();
+      playSynthSound('click'); saveState(); renderTasks(); updateDashboard(); renderGoalTasks();
     }
     
     function clearCompletedTasks() {
@@ -975,109 +940,75 @@
     function toggleTask(id) {
       const task = state.tasks.find(t => t.id === id);
       if (!task) return;
-      if (!task.completed) { 
-        markTaskComplete(id, false, true); 
-      } else {
+      if (!task.completed) { markTaskComplete(id); } 
+      else {
         task.completed = false;
-        if (task.remainingMs <= 0) task.remainingMs = task.expectedMs || 3600000;
         const todayStr = formatDate(new Date());
         if (state.completionHistory[todayStr] && state.completionHistory[todayStr] > 0) state.completionHistory[todayStr]--;
-        playSynthSound('click'); saveState(); renderTasks(); updateDashboard();
+        playSynthSound('click'); saveState(); renderTasks(); updateDashboard(); renderGoalTasks();
       }
     }
 
-    function markTaskComplete(id, auto = false, triggerRewardForTask = false) {
+    function markTaskComplete(id, auto = false) {
       const task = state.tasks.find(t => t.id === id);
       if (!task || task.completed) return;
       checkMidnightRollover();
       
       task.completed = true;
-      task.remainingMs = 0;
       const todayStr = formatDate(new Date());
       state.completionHistory[todayStr] = (state.completionHistory[todayStr] || 0) + 1;
       
-      playSynthSound('congrats');
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      if (auto || !state.audioEnabled) {
+         playSynthSound('congrats'); confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      }
 
-      saveState(); 
-      renderTasks(); 
-      updateDashboard();
-
-      setTimeout(() => checkDailyRewardUnlock(triggerRewardForTask), 500);
-    }
-
-    // Direct work launcher from backlog list
-    function startWorkOnTask(id) {
-      const task = state.tasks.find(t => t.id === id && !t.completed);
-      if (!task) return;
-      ensureTaskTimeProps(task);
-
-      state.currentPickId = task.id;
-      clearPickerTimer();
-      
-      // Set session duration to min(30 mins, task.remainingMs)
-      const sessionMs = Math.min(DEFAULT_TIMER_MS, task.remainingMs);
-      state.pickerTimer.activeTaskId = task.id;
-      state.pickerTimer.remainingTime = sessionMs;
-      saveState();
-
-      populateModalDetails(task);
-      updatePickerTimerUI(sessionMs);
-      openCongratsModal();
+      saveState(); renderTasks(); updateDashboard(); renderGoalTasks();
+      setTimeout(checkDailyRewardUnlock, 500);
     }
 
     function renderTasks() {
+      populateGoalDropdowns();
       const taskList = document.getElementById('taskList');
       const historyList = document.getElementById('historyList');
-      taskList.innerHTML = '';
-      historyList.innerHTML = '';
+      taskList.innerHTML = ''; historyList.innerHTML = '';
 
       const pendingTasks = state.tasks.filter(t => !t.completed);
       const completedTasks = state.tasks.filter(t => t.completed);
 
       if (pendingTasks.length === 0) {
-        taskList.innerHTML = `<div class="text-[10px] text-slate-500 italic py-2 text-center">No active tasks. Create one above or push from Weekly Planner!</div>`;
+        taskList.innerHTML = `<div class="text-[10px] text-slate-500 italic py-2">No active tasks. Add below or push from Task Timers!</div>`;
       } else {
         pendingTasks.forEach(task => {
-          ensureTaskTimeProps(task);
           let prioBadge = '';
           if (task.priority === 'low') prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 uppercase">Low</span>`;
           else if (task.priority === 'medium') prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 uppercase">Medium</span>`;
           else prioBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 uppercase">High</span>`;
 
-          const pctDone = Math.min(100, Math.max(0, ((task.expectedMs - task.remainingMs) / task.expectedMs) * 100));
-          const remTxt = formatDurationBadge(task.remainingMs);
-          const totalTxt = formatDurationBadge(task.expectedMs);
+          let goalBadge = ''; let progressBarHtml = '';
+          const linkedGoal = task.goalId ? state.goalTasks.find(g => g.id === task.goalId) : null;
+          if (linkedGoal) {
+            ensureGoalProps(linkedGoal);
+            const pctDone = Math.min(100, Math.max(0, ((linkedGoal.expectedMs - linkedGoal.remainingMs) / linkedGoal.expectedMs) * 100));
+            goalBadge = `<span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20"><i class="fa-solid fa-stopwatch mr-1"></i>${formatDurationBadge(linkedGoal.remainingMs)} left</span>`;
+            progressBarHtml = `<div class="w-full bg-slate-950 rounded-full h-1 border border-slate-800/80 overflow-hidden mt-1.5"><div class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full progress-fill" style="width: ${pctDone}%"></div></div>`;
+          }
 
           const item = document.createElement('div');
-          item.className = "flex flex-col p-3 rounded-xl border bg-slate-900/70 border-slate-800 text-slate-200 hover:border-slate-700/80 transition-all duration-200 gap-2";
+          item.className = "flex flex-col p-3 rounded-xl border bg-slate-900/70 border-slate-800 text-slate-200 hover:border-slate-700/80 transition-all duration-200 gap-1";
           item.innerHTML = `
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-3 flex-1 min-w-0">
-                <button onclick="toggleTask('${task.id}')" class="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition bg-slate-950 border-slate-700 text-transparent hover:border-emerald-500">
+                <button onclick="toggleTask('${task.id}')" title="Tick for Today" class="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition bg-slate-950 border-slate-700 text-transparent hover:border-emerald-500">
                   <i class="fa-solid fa-check text-[10px]"></i>
                 </button>
                 <div class="flex flex-col min-w-0 flex-1">
                   <span class="text-sm font-semibold truncate pr-2 leading-tight">${task.text}</span>
-                  <div class="flex gap-2 items-center mt-1 flex-wrap">
-                    ${prioBadge}
-                    <span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                      <i class="fa-regular fa-hourglass-half mr-1"></i>${remTxt} left / ${totalTxt}
-                    </span>
-                  </div>
+                  <div class="flex gap-1.5 items-center mt-1 flex-wrap">${prioBadge}${goalBadge}</div>
                 </div>
               </div>
-              <div class="flex items-center gap-1 flex-shrink-0">
-                <button onclick="startWorkOnTask('${task.id}')" title="Start Working on Task" class="w-8 h-8 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 flex items-center justify-center transition active:scale-95 border border-emerald-500/30">
-                  <i class="fa-solid fa-play text-xs ml-0.5"></i>
-                </button>
-                <button onclick="deleteTask('${task.id}')" class="text-slate-500 hover:text-red-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
-              </div>
+              <button onclick="deleteTask('${task.id}')" class="text-slate-500 hover:text-red-400 p-1.5 transition flex-shrink-0"><i class="fa-solid fa-trash-can text-xs"></i></button>
             </div>
-            <!-- Task Time Progress Bar -->
-            <div class="w-full bg-slate-950 rounded-full h-1.5 border border-slate-800/80 overflow-hidden">
-              <div class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full progress-fill" style="width: ${pctDone}%"></div>
-            </div>
+            ${progressBarHtml}
           `;
           taskList.appendChild(item);
         });
@@ -1087,17 +1018,14 @@
         historyList.innerHTML = `<div class="text-[10px] text-slate-600 italic py-1">History clean.</div>`;
       } else {
         completedTasks.forEach(task => {
-          ensureTaskTimeProps(task);
-          const totalTxt = formatDurationBadge(task.expectedMs);
           const item = document.createElement('div');
-          item.className = "flex items-center justify-between p-2.5 rounded-lg border bg-slate-900/30 border-slate-800/50 text-slate-500 opacity-75 transition-all duration-200";
+          item.className = "flex items-center justify-between p-2.5 rounded-lg border bg-slate-900/30 border-slate-800/50 text-slate-500 opacity-70 transition-all duration-200";
           item.innerHTML = `
             <div class="flex items-center gap-3 flex-1 min-w-0">
               <button onclick="toggleTask('${task.id}')" class="w-4 h-4 rounded flex items-center justify-center border bg-emerald-500/20 border-emerald-500 text-emerald-400 transition">
                 <i class="fa-solid fa-check text-[8px]"></i>
               </button>
               <span class="text-xs font-medium truncate line-through">${task.text}</span>
-              <span class="text-[9px] font-mono text-emerald-500/70 ml-auto pr-2">✓ ${totalTxt}</span>
             </div>
             <button onclick="deleteTask('${task.id}')" class="text-slate-600 hover:text-red-400 p-1 transition"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
           `;
@@ -1106,14 +1034,10 @@
       }
     }
 
-    // ==========================================
-    // RANDOM PICKER & MODAL LOGIC
-    // ==========================================
     let isRolling = false;
     function startRandomPicker() {
       checkMidnightRollover();
       const eligibleTasks = state.tasks.filter(t => !t.completed);
-      
       if (eligibleTasks.length === 0) { showFeedbackToast("Add at least one pending task to cycle pick!", "error"); return; }
       if (isRolling) return;
       isRolling = true;
@@ -1132,9 +1056,8 @@
 
       function roll() {
         const elapsed = Date.now() - startTime;
-        if (elapsed >= duration) {
-          finishPicking(eligibleTasks[currentIndex]);
-        } else {
+        if (elapsed >= duration) { finishPicking(eligibleTasks[currentIndex]); } 
+        else {
           currentIndex = (currentIndex + 1) % eligibleTasks.length;
           pickerText.innerHTML = `<span class="text-blue-400 font-bold text-base block sm:text-lg animate-pulse tracking-wide truncate">🔮 ${eligibleTasks[currentIndex].text}</span>`;
           playSynthSound('tick');
@@ -1146,30 +1069,35 @@
     }
 
     function populateModalDetails(selectedTask) {
-      ensureTaskTimeProps(selectedTask);
       const modalTaskText = document.getElementById('modalTaskText');
       const modalTaskPriority = document.getElementById('modalTaskPriority');
-      const remBadge = document.getElementById('modalTaskRemainingBadge');
+      const goalSection = document.getElementById('modalGoalProgressSection');
       const progBar = document.getElementById('modalTaskProgressBar');
-      const spentTxt = document.getElementById('modalTaskSpentTxt');
-      const totalTxt = document.getElementById('modalTaskTotalTxt');
-
+      const remBadge = document.getElementById('modalTaskRemainingBadge');
+      
       modalTaskText.textContent = selectedTask.text;
-      if (selectedTask.priority === 'low') { modalTaskPriority.className = "text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-slate-800 text-slate-300"; modalTaskPriority.textContent = "Low Priority"; }
-      else if (selectedTask.priority === 'medium') { modalTaskPriority.className = "text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-blue-500/25 text-blue-300"; modalTaskPriority.textContent = "Medium Priority"; }
-      else { modalTaskPriority.className = "text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-red-500/25 text-red-300"; modalTaskPriority.textContent = "High Priority"; }
+      
+      if (selectedTask.priority === 'low') { modalTaskPriority.className = "text-[9px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 inline-block mb-2"; modalTaskPriority.textContent = "Low Priority"; }
+      else if (selectedTask.priority === 'medium') { modalTaskPriority.className = "text-[9px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-blue-500/25 text-blue-300 inline-block mb-2"; modalTaskPriority.textContent = "Medium Priority"; }
+      else { modalTaskPriority.className = "text-[9px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-red-500/25 text-red-300 inline-block mb-2"; modalTaskPriority.textContent = "High Priority"; }
 
-      const pct = Math.min(100, Math.max(0, ((selectedTask.expectedMs - selectedTask.remainingMs) / selectedTask.expectedMs) * 100));
-      remBadge.textContent = `${formatDurationBadge(selectedTask.remainingMs)} left`;
-      progBar.style.width = `${pct}%`;
-      spentTxt.textContent = `${formatDurationBadge(selectedTask.expectedMs - selectedTask.remainingMs)} spent`;
-      totalTxt.textContent = `Goal: ${formatDurationBadge(selectedTask.expectedMs)}`;
+      const linkedGoal = selectedTask.goalId ? state.goalTasks.find(g => g.id === selectedTask.goalId) : null;
+      if (linkedGoal) {
+        ensureGoalProps(linkedGoal);
+        goalSection.classList.remove('hidden');
+        const pct = Math.min(100, Math.max(0, ((linkedGoal.expectedMs - linkedGoal.remainingMs) / linkedGoal.expectedMs) * 100));
+        progBar.style.width = `${pct}%`;
+        document.getElementById('modalTaskSpentTxt').textContent = `${formatDurationBadge(linkedGoal.spentMs)} spent`;
+        document.getElementById('modalTaskTotalTxt').textContent = `Total Goal: ${formatDurationBadge(linkedGoal.expectedMs)}`;
+        remBadge.textContent = "Linked Goal";
+      } else {
+        goalSection.classList.add('hidden');
+        remBadge.textContent = "Session";
+      }
     }
 
     function finishPicking(selectedTask) {
       isRolling = false; state.currentPickId = selectedTask.id;
-      ensureTaskTimeProps(selectedTask);
-
       const chooseBtn = document.getElementById('chooseBtn');
       chooseBtn.disabled = false; chooseBtn.className = "glow-btn w-full py-4 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 text-lg active:scale-95 transition transform duration-150";
       chooseBtn.querySelector('span').textContent = "CHOOSE A TASK";
@@ -1178,14 +1106,14 @@
       playSynthSound('congrats'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.65 } });
       
       clearPickerTimer();
-      const sessionMs = Math.min(DEFAULT_TIMER_MS, selectedTask.remainingMs);
       state.pickerTimer.activeTaskId = selectedTask.id;
+      
+      const linkedGoal = selectedTask.goalId ? state.goalTasks.find(g => g.id === selectedTask.goalId && !g.completed) : null;
+      const sessionMs = linkedGoal ? Math.min(DEFAULT_TIMER_MS, linkedGoal.remainingMs) : DEFAULT_TIMER_MS;
       state.pickerTimer.remainingTime = sessionMs;
+      
       saveState();
-
-      populateModalDetails(selectedTask);
-      updatePickerTimerUI(sessionMs);
-      openCongratsModal();
+      populateModalDetails(selectedTask); updatePickerTimerUI(sessionMs); openCongratsModal();
     }
 
     function openCongratsModal() {
@@ -1200,40 +1128,348 @@
 
     function handleModalAction(action) {
       if (!state.currentPickId) { closeCongratsModal(); return; }
-      if (action === 'complete') markTaskComplete(state.currentPickId, false, true);
-      else if (action === 'keep') showFeedbackToast("Progress saved to backlog!");
-      clearPickerTimer(); state.currentPickId = null; closeCongratsModal();
-      renderTasks();
-    }
-
-    // ==========================================
-    // SYSTEM - ROLLOVER & TIMERS
-    // ==========================================
-    function handleMidnightRollover(newDateStr) {
-      state.tasks = state.tasks.filter(t => !t.completed); 
-      
-      const dIndex = new Date(newDateStr).getDay();
-      const newDayName = dayNamesList[dIndex];
-
-      const plannedToday = (state.weeklyPlan[newDayName] || []).map(ensureTaskTimeProps);
-      state.tasks = [...state.tasks, ...plannedToday];
-      state.weeklyPlan[newDayName] = [];
-
-      state.planner.hours = {}; 
-      state.planner.activeTimer = { hour: null, lastTickMs: null, isRunning: false };
-      state.currentDate = newDateStr; 
-      
-      saveState(); updateDashboard(); renderTasks();
-      if (!document.getElementById('viewPlanner').classList.contains('hidden')) renderPlanner();
-      if (!document.getElementById('viewWeekly').classList.contains('hidden')) renderWeeklyView();
-      showFeedbackToast(`New day! Planned tasks for ${newDayName} added to backlog.`);
-    }
-
-    function checkMidnightRollover() {
-      const nowStr = formatDate(new Date());
-      if (state.currentDate !== nowStr) {
-        handleMidnightRollover(nowStr);
+      if (action === 'complete') {
+        markTaskComplete(state.currentPickId);
+        showFeedbackToast("Marked completed for Today!", "success");
+      } else if (action === 'keep') {
+        showFeedbackToast("Session progress synced! Kept in backlog.");
       }
+      clearPickerTimer(); state.currentPickId = null; closeCongratsModal();
+      renderTasks(); renderGoalTasks();
+    }
+
+    function handleBackgroundPickerTimerRestoration() {
+      const t = state.pickerTimer; if (!t || !t.activeTaskId) return;
+      const taskExists = state.tasks.find(x => x.id === t.activeTaskId && !x.completed);
+      if (!taskExists) { clearPickerTimer(); return; }
+      
+      if (t.isRunning && t.targetTime) {
+        const now = Date.now();
+        const elapsedSinceLastTick = t.lastTickMs ? Math.max(0, now - t.lastTickMs) : 0;
+        const left = t.targetTime - now;
+
+        const maxDeductible = Math.min(elapsedSinceLastTick, t.remainingTime);
+        syncTimeSpent({ goalId: taskExists.goalId, deltaMs: maxDeductible });
+
+        if (left <= 0) { 
+          markTaskComplete(t.activeTaskId, true); 
+          showFeedbackToast(`Timer finished in background! Marked done.`, "success"); 
+          clearPickerTimer(); 
+        } else { 
+          t.remainingTime = left; t.lastTickMs = now;
+          state.currentPickId = t.activeTaskId; populateModalDetails(taskExists); updatePickerTimerUI(left); startPickerTimerLoop(); openCongratsModal(); 
+        }
+      } else if (!t.isRunning && t.remainingTime > 0 && t.remainingTime < DEFAULT_TIMER_MS) {
+        state.currentPickId = t.activeTaskId; populateModalDetails(taskExists); updatePickerTimerUI(t.remainingTime); openCongratsModal();
+      }
+    }
+    
+    function updatePickerTimerUI(ms) {
+      document.getElementById('pickerTimerDisplay').textContent = formatTimeDisplay(ms);
+      const icon = document.getElementById('pickerTimerIcon'); const btn = document.getElementById('pickerTimerToggleBtn');
+      if (state.pickerTimer.isRunning) { icon.className = "fa-solid fa-pause text-xl"; btn.className = "w-12 h-12 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 flex items-center justify-center shadow-lg shadow-amber-500/20 transition active:scale-95"; } 
+      else { icon.className = "fa-solid fa-play text-xl ml-0.5"; btn.className = "w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 transition active:scale-95"; }
+    }
+    
+    function togglePickerTimer() {
+      const t = state.pickerTimer;
+      if (t.isRunning) { 
+        t.isRunning = false; t.remainingTime = t.targetTime - Date.now(); t.targetTime = null; t.lastTickMs = null; 
+        clearInterval(localPickerInterval); playSynthSound('click'); 
+      } else { 
+        t.isRunning = true; const now = Date.now(); t.targetTime = now + t.remainingTime; t.lastTickMs = now; 
+        playSynthSound('tick'); startPickerTimerLoop(); 
+      }
+      updatePickerTimerUI(state.pickerTimer.remainingTime); saveState();
+    }
+    
+    function startPickerTimerLoop() {
+      if (localPickerInterval) clearInterval(localPickerInterval);
+      localPickerInterval = setInterval(() => {
+        const t = state.pickerTimer;
+        if (!t.isRunning) return;
+
+        const now = Date.now();
+        const delta = t.lastTickMs ? Math.max(0, now - t.lastTickMs) : 0;
+        t.lastTickMs = now;
+        const left = t.targetTime - now;
+        t.remainingTime = Math.max(0, left);
+
+        const taskId = t.activeTaskId;
+        const activeTask = state.tasks.find(x => x.id === taskId);
+        
+        // Sync time continuously
+        const goalFinished = syncTimeSpent({ goalId: activeTask ? activeTask.goalId : null, deltaMs: delta });
+
+        if (goalFinished) {
+          clearInterval(localPickerInterval);
+          markTaskComplete(taskId, true);
+          clearPickerTimer(); 
+          showFeedbackToast("Master Goal Time Reached! Task completed.", "success");
+          closeCongratsModal(); renderTasks(); renderGoalTasks(); return;
+        }
+        
+        if (activeTask) populateModalDetails(activeTask);
+
+        if (left <= 0) { 
+          clearInterval(localPickerInterval); updatePickerTimerUI(0); 
+          markTaskComplete(taskId, true); clearPickerTimer(); 
+          showFeedbackToast("Focus session complete! Task ticked for today."); 
+          closeCongratsModal(); renderTasks(); renderGoalTasks();
+        } else {
+          updatePickerTimerUI(left);
+        }
+      }, 250);
+    }
+    function clearPickerTimer() { if (localPickerInterval) clearInterval(localPickerInterval); state.pickerTimer = { activeTaskId: null, isRunning: false, targetTime: null, lastTickMs: null, remainingTime: DEFAULT_TIMER_MS }; saveState(); }
+
+    function getLevel() { return Math.floor(Math.max(0, state.gamification.credits) / CREDITS_PER_LEVEL) + 1; }
+    function updateGamificationUI() {
+      const credits = Math.max(0, state.gamification.credits); const lvl = getLevel(); const progress = credits % CREDITS_PER_LEVEL; const pct = (progress / CREDITS_PER_LEVEL) * 100;
+      document.getElementById('rankLevelDisplay').textContent = lvl; document.getElementById('levelIconBadge').textContent = lvl; document.getElementById('totalCreditsDisplay').innerHTML = `${credits} <i class="fa-solid fa-coins text-xs ml-1 opacity-80"></i>`;
+      document.getElementById('rankProgressText').textContent = `${progress} / ${CREDITS_PER_LEVEL} XP`; document.getElementById('rankProgressBar').style.width = `${pct}%`;
+    }
+    function renderPlanner() {
+      const container = document.getElementById('hourlyListContainer'); container.innerHTML = ''; updateGamificationUI();
+      const currentRealHour = new Date().getHours();
+      
+      const activeGoals = state.goalTasks.filter(g => !g.completed);
+      const activeDailys = state.tasks.filter(t => !t.completed);
+
+      for (let h = 6; h <= 23; h++) {
+        if (!state.planner.hours[h]) state.planner.hours[h] = { text: "", goalId: null, dailyId: null, productiveMs: 0, locked: false };
+        const block = state.planner.hours[h]; const isPast = h < currentRealHour; const isCurrent = h === currentRealHour;
+        const displayTime = h > 12 ? `${h-12} PM` : (h===12 ? `12 PM` : `${h} AM`);
+        const wrap = document.createElement('div');
+        let borderClass = 'border-slate-800 bg-slate-900/40';
+        if (isCurrent) borderClass = 'border-blue-500/40 bg-blue-900/10 shadow-[0_0_15px_rgba(59,130,246,0.1)]'; else if (isPast) borderClass = 'border-slate-800/50 bg-slate-900/20 opacity-70';
+        wrap.className = `flex flex-col gap-2 p-2.5 sm:p-3 rounded-xl border ${borderClass} transition-all duration-300 relative`;
+        
+        let contentHtml = '';
+        if (!block.text) {
+          if (isPast) contentHtml = `<div class="text-xs text-slate-600 italic">No task scheduled.</div>`;
+          else {
+            let opts = `<option value="">-- Link Goal or Daily Task --</option>`;
+            activeGoals.forEach(g => { opts += `<option value="goal:${g.id}">⏱️ [Goal] ${g.text.substring(0,20)}</option>`; });
+            activeDailys.forEach(d => { opts += `<option value="daily:${d.id}">🎯 [Today] ${d.text.substring(0,20)}</option>`; });
+
+            contentHtml = `<div class="flex flex-col gap-1.5 w-full"><div class="flex gap-1.5 w-full min-w-0"><select id="planSelect-${h}" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-[11px] text-blue-300 truncate focus:outline-none" onchange="handlePlanSelectChange(${h})">${opts}</select><button onclick="savePlannerTask(${h})" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0">Set</button></div><input type="text" id="planInput-${h}" placeholder="Or type custom hour task..." class="w-full min-w-0 bg-slate-950/70 border border-slate-800/80 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-200 focus:outline-none"></div>`;
+          }
+        } else {
+          const prodMins = Math.floor(block.productiveMs / 60000); const activeSecs = Math.floor(block.productiveMs / 1000) % 60; const wastedMins = isPast ? Math.max(0, 60 - prodMins) : 0; const prodPct = Math.min(100, (block.productiveMs / PLANNER_HOUR_LIMIT_MS) * 100);
+          let btnHtml = ''; let badgeHtml = '';
+          
+          let linkHtml = '';
+          if (block.goalId) linkHtml = `<span class="text-[8px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 px-1 rounded ml-1">Goal Sync</span>`;
+          if (block.dailyId) linkHtml = `<span class="text-[8px] bg-blue-500/15 border border-blue-500/30 text-blue-400 px-1 rounded ml-1">Daily Sync</span>`;
+
+          if (isCurrent) {
+            const isRunning = (state.planner.activeTimer.hour === h && state.planner.activeTimer.isRunning);
+            btnHtml = `<button onclick="togglePlannerTimer(${h})" class="w-8 h-8 flex items-center justify-center rounded-lg ${isRunning ? 'bg-amber-500 text-slate-900' : 'bg-blue-600 text-white'} transition active:scale-95 shadow-md"><i class="fa-solid ${isRunning ? 'fa-pause' : 'fa-play'} text-sm ${!isRunning? 'ml-0.5': ''}"></i></button>`;
+            badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">ACTIVE</span>`;
+          } else if (isPast && block.locked) {
+             if (prodMins > 0) badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">+${prodMins} XP</span>`;
+             else badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">-60 XP Penalty</span>`;
+          }
+          contentHtml = `<div class="flex justify-between items-start gap-2 w-full"><div class="flex flex-col flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap mb-1"><span class="text-sm font-medium text-slate-200 truncate">${block.text}</span>${linkHtml}${badgeHtml}</div><div class="flex justify-between text-[9px] font-medium text-slate-500 mb-0.5"><span class="text-emerald-400">${prodMins}m ${activeSecs}s Prod</span>${isPast ? `<span class="text-red-400">${wastedMins}m Wasted</span>` : `<span>Max 60m</span>`}</div><div class="w-full bg-slate-950 rounded-full h-1.5 border border-slate-800 overflow-hidden flex"><div class="bg-emerald-500 h-full progress-fill" style="width: ${prodPct}%"></div>${isPast ? `<div class="bg-red-500/50 h-full progress-fill" style="width: ${100 - prodPct}%"></div>` : ''}</div></div><div class="flex gap-1.5 items-center">${btnHtml}${!isPast ? `<button onclick="deletePlannerTask(${h})" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-red-400 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>` : ''}</div></div>`;
+        }
+        wrap.innerHTML = `<div class="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-md ${isCurrent ? 'bg-blue-500' : (isPast ? 'bg-slate-700' : 'bg-slate-800')}"></div><div class="flex items-center gap-2 sm:gap-3 pl-1.5"><div class="w-11 sm:w-14 flex-shrink-0 text-right"><span class="text-[10px] font-black tracking-wider ${isCurrent ? 'text-blue-400' : 'text-slate-500'}">${displayTime}</span></div><div class="flex-1 min-w-0 border-l border-slate-700/50 pl-2.5 sm:pl-3">${contentHtml}</div></div>`;
+        container.appendChild(wrap);
+      }
+    }
+    
+    function handlePlanSelectChange(h) {
+      const sel = document.getElementById(`planSelect-${h}`);
+      const inp = document.getElementById(`planInput-${h}`);
+      if (!sel || !sel.value || !inp) return;
+      if (sel.value.startsWith('goal:')) { const gId = sel.value.replace('goal:',''); const found = state.goalTasks.find(x=>x.id===gId); if (found) inp.value = found.text; }
+      if (sel.value.startsWith('daily:')) { const dId = sel.value.replace('daily:',''); const found = state.tasks.find(x=>x.id===dId); if (found) inp.value = found.text; }
+    }
+
+    function savePlannerTask(h) { 
+      const sel = document.getElementById(`planSelect-${h}`);
+      const input = document.getElementById(`planInput-${h}`); 
+      let text = input.value.trim(); 
+      const rawVal = sel ? sel.value : "";
+      let goalId = null; let dailyId = null;
+
+      if (rawVal.startsWith('goal:')) { goalId = rawVal.replace('goal:', ''); if(!text) { const g = state.goalTasks.find(x=>x.id===goalId); if(g) text = g.text; } }
+      else if (rawVal.startsWith('daily:')) { dailyId = rawVal.replace('daily:', ''); const t = state.tasks.find(x=>x.id===dailyId); if(t) { if(!text) text = t.text; goalId = t.goalId || null; } }
+      
+      if (!text) return; 
+      state.planner.hours[h] = { text: text, goalId: goalId, dailyId: dailyId, productiveMs: 0, locked: false }; 
+      playSynthSound('click'); saveState(); renderPlanner(); 
+    }
+    function deletePlannerTask(h) { if (state.planner.activeTimer.hour === h && state.planner.activeTimer.isRunning) { showFeedbackToast("Pause the timer before deleting!", "error"); return; } state.planner.hours[h] = { text: "", goalId: null, dailyId: null, productiveMs: 0, locked: false }; playSynthSound('click'); saveState(); renderPlanner(); }
+    function togglePlannerTimer(h) {
+      const active = state.planner.activeTimer;
+      if (active.isRunning && active.hour !== h) active.isRunning = false;
+      if (active.hour === h && active.isRunning) { active.isRunning = false; playSynthSound('click'); } 
+      else { active.hour = h; active.lastTickMs = Date.now(); active.isRunning = true; playSynthSound('tick'); }
+      saveState(); renderPlanner();
+    }
+    function handleBackgroundPlannerRestoration() {
+      const active = state.planner.activeTimer; if (!active.isRunning || active.hour === null) return;
+      const block = state.planner.hours[active.hour]; if (!block) { active.isRunning = false; return; }
+      const now = Date.now(); const delta = now - active.lastTickMs; const maxRemaining = PLANNER_HOUR_LIMIT_MS - block.productiveMs;
+      const actualDelta = Math.min(delta, maxRemaining);
+      if (actualDelta > 0) {
+        block.productiveMs += actualDelta;
+        syncTimeSpent({ goalId: block.goalId, deltaMs: actualDelta });
+      }
+      active.lastTickMs = now; saveState();
+    }
+    function plannerTickLoop() {
+      const active = state.planner.activeTimer;
+      if (active.isRunning && active.hour !== null) {
+        const block = state.planner.hours[active.hour];
+        if (block) {
+          const now = Date.now(); const delta = now - active.lastTickMs; active.lastTickMs = now;
+          const allowedDelta = Math.min(delta, PLANNER_HOUR_LIMIT_MS - block.productiveMs);
+          
+          if (allowedDelta > 0) {
+            block.productiveMs += allowedDelta;
+            const finishedGoal = syncTimeSpent({ goalId: block.goalId, deltaMs: allowedDelta });
+            if (finishedGoal) { showFeedbackToast(`Linked Master Goal Timer Completed!`, "success"); }
+          }
+          
+          if (block.productiveMs >= PLANNER_HOUR_LIMIT_MS) { block.productiveMs = PLANNER_HOUR_LIMIT_MS; active.isRunning = false; playSynthSound('complete'); showFeedbackToast("Max 60 mins reached for this hour!", "success"); } 
+          if (!document.getElementById('viewPlanner').classList.contains('hidden')) renderPlanner();
+        }
+      }
+    }
+    function evaluateHourlyProgress() {
+      const currentRealHour = new Date().getHours(); let stateChanged = false; let prevLevel = getLevel();
+      for (let h = 6; h <= 23; h++) {
+        const block = state.planner.hours[h]; if (!block || !block.text || block.locked) continue;
+        if (h < currentRealHour) {
+          if (state.planner.activeTimer.hour === h) state.planner.activeTimer.isRunning = false;
+          const prodMins = Math.floor(block.productiveMs / 60000);
+          if (prodMins === 0) { state.gamification.credits -= 60; if(state.gamification.credits < 0) state.gamification.credits = 0; showFeedbackToast(`Missed Task: ${block.text}! -60 XP Penalty.`, "penalty"); playSynthSound('error'); } 
+          else { state.gamification.credits += prodMins; showFeedbackToast(`Great focus! +${prodMins} XP earned for ${block.text}`, "success"); }
+          block.locked = true; stateChanged = true;
+        }
+      }
+      if (stateChanged) {
+        saveState(); if (!document.getElementById('viewPlanner').classList.contains('hidden')) renderPlanner();
+        const newLevel = getLevel(); if (newLevel > prevLevel) { playSynthSound('levelup'); confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } }); showFeedbackToast(`PROMOTION! You reached Level ${newLevel}!`, "success"); }
+      }
+    }
+
+    function renderWeeklyView() {
+      populateGoalDropdowns();
+      const dayContainer = document.getElementById('weeklyDaySelector'); dayContainer.innerHTML = '';
+      const realTodayStr = dayNamesList[new Date().getDay()];
+
+      dayNamesList.forEach(d => {
+        const isSelected = d === selectedWeeklyDay; const isRealToday = d === realTodayStr;
+        const btn = document.createElement('button');
+        btn.onclick = () => { selectedWeeklyDay = d; playSynthSound('click'); renderWeeklyView(); };
+        btn.className = `day-btn snap-center flex flex-col items-center justify-center min-w-[50px] py-2 rounded-xl border transition ${isSelected ? 'active font-bold' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'}`;
+        btn.innerHTML = `<span class="text-xs uppercase">${d}</span>${isRealToday ? '<span class="text-[8px] mt-0.5 bg-blue-500 text-white px-1 rounded-sm leading-tight">TODAY</span>' : ''}`;
+        dayContainer.appendChild(btn);
+      });
+
+      const tasksContainer = document.getElementById('weeklyTaskList'); tasksContainer.innerHTML = '';
+      const list = state.weeklyPlan[selectedWeeklyDay] || [];
+      
+      if (list.length === 0) {
+        tasksContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 italic">No tasks planned for ${selectedWeeklyDay}.</div>`;
+      } else {
+        list.forEach(t => {
+          let prioColor = t.priority === 'high' ? 'text-red-400' : (t.priority === 'low' ? 'text-slate-400' : 'text-blue-400');
+          const linkedGoal = t.goalId ? state.goalTasks.find(g => g.id === t.goalId) : null;
+          const goalBadge = linkedGoal ? `<span class="text-[9px] font-mono bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30"><i class="fa-solid fa-stopwatch mr-1"></i>${formatDurationBadge(linkedGoal.remainingMs)}</span>` : `<span class="text-[9px] text-slate-500">Daily Task</span>`;
+          
+          const row = document.createElement('div');
+          row.className = "flex justify-between items-center bg-slate-900/50 p-2.5 rounded-xl border border-slate-800 gap-2";
+          row.innerHTML = `
+            <div class="flex flex-col min-w-0 flex-1">
+              <span class="text-xs text-slate-200 truncate font-medium">${t.text}</span>
+              <div class="flex items-center gap-2 mt-1 flex-wrap"><span class="text-[9px] uppercase ${prioColor} font-bold">${t.priority}</span>${goalBadge}</div>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button onclick="pushWeeklyTaskToToday('${t.id}')" title="Move to Today's Active Backlog" class="text-[10px] bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 border border-blue-500/30"><i class="fa-solid fa-bolt"></i> Today</button>
+              <button onclick="deleteWeeklyTask('${t.id}')" class="text-slate-500 hover:text-red-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </div>
+          `;
+          tasksContainer.appendChild(row);
+        });
+      }
+
+      const rewardsContainer = document.getElementById('rewardsList'); rewardsContainer.innerHTML = '';
+      document.getElementById('rewardCountTxt').textContent = `${state.rewards.length}/7`;
+      if (state.rewards.length === 0) {
+        rewardsContainer.innerHTML = `<div class="text-[10px] text-slate-500 text-center italic py-2">No rewards added yet.</div>`;
+      } else {
+        state.rewards.forEach(r => {
+          const isUnlocked = r.unlocked; const bgClass = isUnlocked ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-900/50 border-slate-800';
+          const iconHtml = isUnlocked ? `<i class="fa-solid fa-lock-open text-amber-400"></i>` : `<i class="fa-solid fa-lock text-slate-600"></i>`;
+          const row = document.createElement('div');
+          row.className = `flex justify-between items-center p-3 rounded-xl border transition ${bgClass}`;
+          row.innerHTML = `
+            <div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 rounded-full bg-slate-950 flex items-center justify-center shadow-inner">${iconHtml}</div><div class="flex flex-col min-w-0"><span class="text-xs font-bold ${isUnlocked ? 'text-amber-400' : 'text-slate-300'} truncate">${r.text}</span>${isUnlocked ? `<span class="text-[9px] text-amber-500/70">Unlocked on ${r.unlockedDate}</span>` : `<span class="text-[9px] text-slate-500">Locked - Clear backlog to unlock</span>`}</div></div>
+            <button onclick="deleteReward('${r.id}')" class="text-slate-500 hover:text-red-400 p-2 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+          `;
+          rewardsContainer.appendChild(row);
+        });
+      }
+    }
+
+    function handleAddWeeklyTask(e) {
+      e.preventDefault();
+      const input = document.getElementById('weeklyTaskInput');
+      const goalSel = document.getElementById('weeklyGoalSelect');
+      const text = input.value.trim(); const goalId = goalSel && goalSel.value ? goalSel.value : null;
+      if (!text) return;
+      state.weeklyPlan[selectedWeeklyDay].push({ id: crypto.randomUUID(), text, priority: 'medium', goalId: goalId, completed: false, createdAt: new Date().toISOString() });
+      input.value = ''; if(goalSel) goalSel.value = ''; playSynthSound('complete'); saveState(); renderWeeklyView();
+    }
+
+    function pushWeeklyTaskToToday(id) {
+      const list = state.weeklyPlan[selectedWeeklyDay] || [];
+      const taskIndex = list.findIndex(t => t.id === id);
+      if (taskIndex === -1) return;
+      const [task] = list.splice(taskIndex, 1);
+      state.tasks.unshift(task);
+      playSynthSound('complete'); saveState(); renderWeeklyView(); renderTasks(); updateDashboard();
+      showFeedbackToast(`Moved "${task.text}" to Today's Active Backlog!`, "success");
+    }
+
+    function deleteWeeklyTask(id) { state.weeklyPlan[selectedWeeklyDay] = state.weeklyPlan[selectedWeeklyDay].filter(t => t.id !== id); playSynthSound('click'); saveState(); renderWeeklyView(); }
+    
+    function handleAddReward(e) {
+      e.preventDefault(); if (state.rewards.length >= 7) { showFeedbackToast("Maximum 7 rewards allowed!", "error"); return; }
+      const input = document.getElementById('rewardInput'); const text = input.value.trim(); if (!text) return;
+      state.rewards.push({ id: crypto.randomUUID(), text, unlocked: false, unlockedDate: null });
+      input.value = ''; playSynthSound('complete'); saveState(); renderWeeklyView();
+    }
+
+    function deleteReward(id) { state.rewards = state.rewards.filter(r => r.id !== id); playSynthSound('click'); saveState(); renderWeeklyView(); }
+
+    function checkDailyRewardUnlock() {
+      const pending = state.tasks.filter(t => !t.completed); const completed = state.tasks.filter(t => t.completed);
+      if (pending.length === 0 && completed.length > 0) {
+        const todayStr = formatDate(new Date());
+        const alreadyUnlockedToday = state.rewards.some(r => r.unlockedDate === todayStr); if (alreadyUnlockedToday) return; 
+        const lockedRewards = state.rewards.filter(r => !r.unlocked); if (lockedRewards.length === 0) return; 
+        const luckyIndex = Math.floor(Math.random() * lockedRewards.length); const rewardToUnlock = lockedRewards[luckyIndex];
+        rewardToUnlock.unlocked = true; rewardToUnlock.unlockedDate = todayStr; saveState();
+        triggerRewardModal(rewardToUnlock.text);
+      }
+    }
+
+    function triggerRewardModal(rewardText) {
+      playSynthSound('reward'); confetti({ particleCount: 300, spread: 150, origin: { y: 0.5 }, colors: ['#f59e0b', '#fbbf24', '#ffffff'] });
+      document.getElementById('unlockedRewardText').textContent = rewardText;
+      const overlay = document.getElementById('rewardModalOverlay'); const card = document.getElementById('rewardModalCard');
+      overlay.classList.remove('hidden'); setTimeout(() => { card.classList.remove('scale-50', 'opacity-0'); card.classList.add('scale-100', 'opacity-100'); }, 50);
+      if (!document.getElementById('viewWeekly').classList.contains('hidden')) { renderWeeklyView(); }
+    }
+
+    function closeRewardModal() {
+      playSynthSound('click'); const overlay = document.getElementById('rewardModalOverlay'); const card = document.getElementById('rewardModalCard');
+      card.classList.remove('scale-100', 'opacity-100'); card.classList.add('scale-50', 'opacity-0'); setTimeout(() => { overlay.classList.add('hidden'); }, 300);
     }
 
     function updateDashboard() {
@@ -1249,6 +1485,23 @@
       renderGithubGrid();
     }
 
+    function handleMidnightRollover(newDateStr) {
+      state.tasks = state.tasks.filter(t => !t.completed); 
+      const dIndex = new Date(newDateStr).getDay(); const newDayName = dayNamesList[dIndex];
+      const plannedToday = state.weeklyPlan[newDayName] || [];
+      state.tasks = [...state.tasks, ...plannedToday]; state.weeklyPlan[newDayName] = []; 
+      state.planner.hours = {}; state.planner.activeTimer = { hour: null, lastTickMs: null, isRunning: false };
+      state.currentDate = newDateStr; 
+      saveState(); updateDashboard(); renderTasks(); renderGoalTasks();
+      if (!document.getElementById('viewPlanner').classList.contains('hidden')) renderPlanner();
+      if (!document.getElementById('viewWeekly').classList.contains('hidden')) renderWeeklyView();
+      showFeedbackToast(`New day! Planned tasks for ${newDayName} added to backlog.`);
+    }
+
+    function checkMidnightRollover() {
+      const nowStr = formatDate(new Date()); if (state.currentDate !== nowStr) handleMidnightRollover(nowStr);
+    }
+
     function getGithubColorClass(count) {
       if (!count || count === 0) return 'bg-github-0 border border-slate-700/50';
       if (count === 1) return 'bg-github-1 border border-github-2/30';
@@ -1258,13 +1511,9 @@
     }
 
     function renderGithubGrid() {
-      const container = document.getElementById('weekContainer');
-      const template = document.getElementById('dayCellTemplate');
-      container.innerHTML = '';
+      const container = document.getElementById('weekContainer'); const template = document.getElementById('dayCellTemplate'); container.innerHTML = '';
       const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const today = new Date();
-      const currentDayIndex = today.getDay(); 
-      const daysToMonday = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
+      const today = new Date(); const currentDayIndex = today.getDay(); const daysToMonday = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
       const monday = new Date(today); monday.setDate(today.getDate() - daysToMonday);
       let total = 0;
       dayLabels.forEach((label, idx) => {
@@ -1283,348 +1532,20 @@
       document.getElementById('weeklyCount').textContent = `${total} Task${total !== 1 ? 's' : ''} Done`;
     }
 
-    function triggerConfettiOnDayBox() {
-      playSynthSound('complete'); confetti({ particleCount: 40, angle: 60, spread: 55, origin: { x: 0 } });
-      confetti({ particleCount: 40, angle: 120, spread: 55, origin: { x: 1 } });
-    }
-
-    // --- PICKER SESSION TIMER (WITH REAL-TIME TASK HOUR DEDUCTION) ---
-    function handleBackgroundPickerTimerRestoration() {
-      const t = state.pickerTimer; if (!t || !t.activeTaskId) return;
-      const taskExists = state.tasks.find(x => x.id === t.activeTaskId && !x.completed);
-      if (!taskExists) { clearPickerTimer(); return; }
-      ensureTaskTimeProps(taskExists);
-
-      if (t.isRunning && t.targetTime) {
-        const now = Date.now();
-        const elapsedSinceLastTick = t.lastTickMs ? Math.max(0, now - t.lastTickMs) : 0;
-        const left = t.targetTime - now;
-
-        // Deduct time spent in background from task's expected time
-        const maxDeductible = Math.min(elapsedSinceLastTick, t.remainingTime);
-        const autoCompleted = deductTimeFromTask(t.activeTaskId, maxDeductible);
-
-        if (autoCompleted) {
-          showFeedbackToast(`Task "${taskExists.text}" finished its expected hours in background!`, "success");
-          clearPickerTimer();
-        } else if (left <= 0) {
-          showFeedbackToast(`30m Focus session complete! Time deducted from task.`, "success");
-          clearPickerTimer();
-          renderTasks();
-        } else {
-          t.remainingTime = left;
-          t.lastTickMs = now;
-          state.currentPickId = t.activeTaskId;
-          populateModalDetails(taskExists);
-          updatePickerTimerUI(left);
-          startPickerTimerLoop();
-          openCongratsModal();
-        }
-      } else if (!t.isRunning && t.remainingTime > 0 && t.remainingTime < DEFAULT_TIMER_MS) {
-        state.currentPickId = t.activeTaskId;
-        populateModalDetails(taskExists);
-        updatePickerTimerUI(t.remainingTime);
-        openCongratsModal();
-      }
-    }
-
-    function updatePickerTimerUI(ms) {
-      document.getElementById('pickerTimerDisplay').textContent = formatTimeDisplay(ms);
-      const icon = document.getElementById('pickerTimerIcon'); const btn = document.getElementById('pickerTimerToggleBtn');
-      if (state.pickerTimer.isRunning) { icon.className = "fa-solid fa-pause text-xl"; btn.className = "w-12 h-12 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 flex items-center justify-center shadow-lg shadow-amber-500/20 transition active:scale-95"; } 
-      else { icon.className = "fa-solid fa-play text-xl ml-0.5"; btn.className = "w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 transition active:scale-95"; }
-    }
-
-    function togglePickerTimer() {
-      const t = state.pickerTimer;
-      if (t.isRunning) {
-        t.isRunning = false;
-        t.remainingTime = Math.max(0, t.targetTime - Date.now());
-        t.targetTime = null;
-        t.lastTickMs = null;
-        clearInterval(localPickerInterval);
-        playSynthSound('click');
-        renderTasks();
-      } else {
-        t.isRunning = true;
-        t.lastTickMs = Date.now();
-        t.targetTime = Date.now() + t.remainingTime;
-        playSynthSound('tick');
-        startPickerTimerLoop();
-      }
-      updatePickerTimerUI(t.remainingTime);
-      saveState();
-    }
-
-    function startPickerTimerLoop() {
-      if (localPickerInterval) clearInterval(localPickerInterval);
-      localPickerInterval = setInterval(() => {
-        const t = state.pickerTimer;
-        if (!t.isRunning) return;
-
-        const now = Date.now();
-        const delta = t.lastTickMs ? Math.max(0, now - t.lastTickMs) : 0;
-        t.lastTickMs = now;
-        const left = t.targetTime - now;
-        t.remainingTime = Math.max(0, left);
-
-        const taskId = t.activeTaskId;
-        const taskCompleted = deductTimeFromTask(taskId, delta);
-
-        if (taskCompleted) {
-          clearInterval(localPickerInterval);
-          clearPickerTimer();
-          showFeedbackToast("All expected hours completed! Task marked complete!", "success");
-          closeCongratsModal();
-          return;
-        }
-
-        const activeTask = state.tasks.find(x => x.id === taskId);
-        if (activeTask) populateModalDetails(activeTask);
-
-        if (left <= 0) {
-          clearInterval(localPickerInterval);
-          updatePickerTimerUI(0);
-          clearPickerTimer();
-          playSynthSound('complete');
-          showFeedbackToast("Focus session finished! Time deducted from task.", "success");
-          closeCongratsModal();
-          renderTasks();
-        } else {
-          updatePickerTimerUI(left);
-        }
-      }, 250);
-    }
-
-    function clearPickerTimer() {
-      if (localPickerInterval) clearInterval(localPickerInterval);
-      state.pickerTimer = { activeTaskId: null, isRunning: false, targetTime: null, lastTickMs: null, remainingTime: DEFAULT_TIMER_MS };
-      saveState();
-    }
-    
-    // ==========================================
-    // HOURLY PLANNER (WITH LINKED TASK DEDUCTION)
-    // ==========================================
-    function getLevel() { return Math.floor(Math.max(0, state.gamification.credits) / CREDITS_PER_LEVEL) + 1; }
-    function updateGamificationUI() {
-      const credits = Math.max(0, state.gamification.credits); const lvl = getLevel(); const progress = credits % CREDITS_PER_LEVEL; const pct = (progress / CREDITS_PER_LEVEL) * 100;
-      document.getElementById('rankLevelDisplay').textContent = lvl; document.getElementById('levelIconBadge').textContent = lvl; document.getElementById('totalCreditsDisplay').innerHTML = `${credits} <i class="fa-solid fa-coins text-xs ml-1 opacity-80"></i>`;
-      document.getElementById('rankProgressText').textContent = `${progress} / ${CREDITS_PER_LEVEL} XP`; document.getElementById('rankProgressBar').style.width = `${pct}%`;
-    }
-
-    function renderPlanner() {
-      const container = document.getElementById('hourlyListContainer'); container.innerHTML = ''; updateGamificationUI();
-      const currentRealHour = new Date().getHours();
-      const pendingTasks = state.tasks.filter(t => !t.completed);
-
-      for (let h = 6; h <= 23; h++) {
-        if (!state.planner.hours[h]) state.planner.hours[h] = { text: "", taskId: null, productiveMs: 0, locked: false };
-        const block = state.planner.hours[h]; const isPast = h < currentRealHour; const isCurrent = h === currentRealHour;
-        const displayTime = h > 12 ? `${h-12} PM` : (h===12 ? `12 PM` : `${h} AM`);
-        const wrap = document.createElement('div');
-        let borderClass = 'border-slate-800 bg-slate-900/40';
-        if (isCurrent) borderClass = 'border-blue-500/40 bg-blue-900/10 shadow-[0_0_15px_rgba(59,130,246,0.1)]'; else if (isPast) borderClass = 'border-slate-800/50 bg-slate-900/20 opacity-70';
-        wrap.className = `flex flex-col gap-2 p-2.5 sm:p-3 rounded-xl border ${borderClass} transition-all duration-300 relative overflow-hidden`;
-        let contentHtml = '';
-
-        if (!block.text) {
-          if (isPast) {
-            contentHtml = `<div class="text-xs text-slate-600 italic">No task scheduled.</div>`;
-          } else {
-            let optionsHtml = `<option value="">-- Select from Active Backlog --</option>`;
-            pendingTasks.forEach(pt => {
-              ensureTaskTimeProps(pt);
-              const shortText = pt.text.length > 26 ? pt.text.substring(0, 26) + '...' : pt.text;
-              optionsHtml += `<option value="${pt.id}">🎯 ${shortText} (${formatDurationBadge(pt.remainingMs)})</option>`;
-            });
-
-            contentHtml = `
-              <div class="flex flex-col gap-1.5 w-full min-w-0">
-                <div class="flex gap-1.5 w-full min-w-0">
-                  <select id="planSelect-${h}" onchange="handlePlanSelectChange(${h})" class="flex-1 min-w-0 w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-[11px] text-blue-300 truncate focus:outline-none focus:border-blue-500">
-                    ${optionsHtml}
-                  </select>
-                  <button onclick="savePlannerTask(${h})" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex-shrink-0">Set</button>
-                </div>
-                <input type="text" id="planInput-${h}" placeholder="Or type custom task..." class="w-full min-w-0 bg-slate-950/70 border border-slate-800/80 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500 transition">
-              </div>`;
-          }
-        } else {
-          const prodMins = Math.floor(block.productiveMs / 60000); const activeSecs = Math.floor(block.productiveMs / 1000) % 60; const wastedMins = isPast ? Math.max(0, 60 - prodMins) : 0; const prodPct = Math.min(100, (block.productiveMs / PLANNER_HOUR_LIMIT_MS) * 100);
-          let btnHtml = ''; let badgeHtml = '';
-          
-          const linkedTask = block.taskId ? state.tasks.find(t => t.id === block.taskId) : null;
-          let linkedInfoHtml = '';
-          if (linkedTask) {
-            ensureTaskTimeProps(linkedTask);
-            linkedInfoHtml = `<span class="text-[9px] font-mono text-purple-300 bg-purple-500/15 px-1.5 py-0.5 rounded border border-purple-500/30">${linkedTask.completed ? '✓ Goal Done' : formatDurationBadge(linkedTask.remainingMs) + ' rem'}</span>`;
-          }
-
-          if (isCurrent) {
-            const isRunning = (state.planner.activeTimer.hour === h && state.planner.activeTimer.isRunning);
-            btnHtml = `<button onclick="togglePlannerTimer(${h})" class="w-8 h-8 flex items-center justify-center rounded-lg ${isRunning ? 'bg-amber-500 text-slate-900' : 'bg-blue-600 text-white'} transition active:scale-95 shadow-md"><i class="fa-solid ${isRunning ? 'fa-pause' : 'fa-play'} text-sm ${!isRunning? 'ml-0.5': ''}"></i></button>`;
-            badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">ACTIVE</span>`;
-          } else if (isPast && block.locked) {
-             if (prodMins > 0) badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">+${prodMins} XP</span>`;
-             else badgeHtml = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">-60 XP Penalty</span>`;
-          }
-          contentHtml = `
-            <div class="flex justify-between items-start gap-2 w-full">
-              <div class="flex flex-col flex-1 min-w-0">
-                <div class="flex items-center gap-1.5 mb-1 flex-wrap">
-                  <span class="text-sm font-medium text-slate-200 truncate">${block.text}</span>
-                  ${linkedInfoHtml}
-                  ${badgeHtml}
-                </div>
-                <div class="flex justify-between text-[9px] font-medium text-slate-500 mb-0.5">
-                  <span class="text-emerald-400">${prodMins}m ${activeSecs}s Prod</span>
-                  ${isPast ? `<span class="text-red-400">${wastedMins}m Wasted</span>` : `<span>Max 60m</span>`}
-                </div>
-                <div class="w-full bg-slate-950 rounded-full h-1.5 border border-slate-800 overflow-hidden flex">
-                  <div class="bg-emerald-500 h-full progress-fill" style="width: ${prodPct}%"></div>
-                  ${isPast ? `<div class="bg-red-500/50 h-full progress-fill" style="width: ${100 - prodPct}%"></div>` : ''}
-                </div>
-              </div>
-              <div class="flex gap-1 items-center flex-shrink-0">
-                ${btnHtml}
-                ${!isPast ? `<button onclick="deletePlannerTask(${h})" class="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-red-400 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>` : ''}
-              </div>
-            </div>`;
-        }
-        wrap.innerHTML = `<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-md ${isCurrent ? 'bg-blue-500' : (isPast ? 'bg-slate-700' : 'bg-slate-800')}"></div><div class="flex items-center gap-2 sm:gap-3 pl-1.5 w-full min-w-0"><div class="w-11 sm:w-14 flex-shrink-0 text-right"><span class="text-[10px] font-black tracking-wider ${isCurrent ? 'text-blue-400' : 'text-slate-500'}">${displayTime}</span></div><div class="flex-1 min-w-0 border-l border-slate-700/50 pl-2.5 sm:pl-3">${contentHtml}</div></div>`;
-        container.appendChild(wrap);
-      }
-    }
-
-    function handlePlanSelectChange(h) {
-      const sel = document.getElementById(`planSelect-${h}`);
-      const inp = document.getElementById(`planInput-${h}`);
-      if (sel && sel.value) {
-        const found = state.tasks.find(t => t.id === sel.value);
-        if (found && inp) inp.value = found.text;
-      }
-    }
-
-    function savePlannerTask(h) {
-      const sel = document.getElementById(`planSelect-${h}`);
-      const input = document.getElementById(`planInput-${h}`);
-      const selectedTaskId = sel ? sel.value : "";
-      let text = input ? input.value.trim() : "";
-
-      if (selectedTaskId && !text) {
-        const found = state.tasks.find(t => t.id === selectedTaskId);
-        if (found) text = found.text;
-      }
-      if (!text) return;
-
-      state.planner.hours[h] = {
-        text: text,
-        taskId: selectedTaskId || null,
-        productiveMs: 0,
-        locked: false
-      };
-      playSynthSound('click'); saveState(); renderPlanner();
-    }
-
-    function deletePlannerTask(h) {
-      if (state.planner.activeTimer.hour === h && state.planner.activeTimer.isRunning) { showFeedbackToast("Pause the timer before deleting!", "error"); return; }
-      state.planner.hours[h] = { text: "", taskId: null, productiveMs: 0, locked: false };
-      playSynthSound('click'); saveState(); renderPlanner();
-    }
-
-    function togglePlannerTimer(h) {
-      const active = state.planner.activeTimer;
-      if (active.isRunning && active.hour !== h) active.isRunning = false;
-      if (active.hour === h && active.isRunning) { active.isRunning = false; playSynthSound('click'); } 
-      else { active.hour = h; active.lastTickMs = Date.now(); active.isRunning = true; playSynthSound('tick'); }
-      saveState(); renderPlanner();
-    }
-
-    function handleBackgroundPlannerRestoration() {
-      const active = state.planner.activeTimer; if (!active.isRunning || active.hour === null) return;
-      const block = state.planner.hours[active.hour]; if (!block) { active.isRunning = false; return; }
-      const now = Date.now(); const delta = now - active.lastTickMs; const maxRemaining = PLANNER_HOUR_LIMIT_MS - block.productiveMs;
-      const actualDelta = Math.min(delta, maxRemaining);
-      if (actualDelta > 0) {
-        block.productiveMs += actualDelta;
-        if (block.taskId) deductTimeFromTask(block.taskId, actualDelta);
-      }
-      active.lastTickMs = now; saveState();
-    }
-
-    function plannerTickLoop() {
-      const active = state.planner.activeTimer;
-      if (active.isRunning && active.hour !== null) {
-        const block = state.planner.hours[active.hour];
-        if (block) {
-          const now = Date.now();
-          const delta = Math.max(0, now - active.lastTickMs);
-          active.lastTickMs = now;
-
-          const allowedDelta = Math.min(delta, PLANNER_HOUR_LIMIT_MS - block.productiveMs);
-          block.productiveMs += allowedDelta;
-
-          if (block.taskId && allowedDelta > 0) {
-            const finishedTask = deductTimeFromTask(block.taskId, allowedDelta);
-            if (finishedTask) {
-              showFeedbackToast(`Linked Task "${block.text}" reached 0h remaining and is now Complete!`, "success");
-            }
-          }
-
-          if (block.productiveMs >= PLANNER_HOUR_LIMIT_MS) {
-            block.productiveMs = PLANNER_HOUR_LIMIT_MS;
-            active.isRunning = false;
-            playSynthSound('complete');
-            showFeedbackToast("Maximum productive 60 mins reached for this hour!", "success");
-          }
-          if (!document.getElementById('viewPlanner').classList.contains('hidden')) renderPlanner();
-        }
-      }
-    }
-
-    function evaluateHourlyProgress() {
-      const currentRealHour = new Date().getHours(); let stateChanged = false; let prevLevel = getLevel();
-      for (let h = 6; h <= 23; h++) {
-        const block = state.planner.hours[h]; if (!block || !block.text || block.locked) continue;
-        if (h < currentRealHour) {
-          if (state.planner.activeTimer.hour === h) state.planner.activeTimer.isRunning = false;
-          const prodMins = Math.floor(block.productiveMs / 60000);
-          if (prodMins === 0) { state.gamification.credits -= 60; if(state.gamification.credits < 0) state.gamification.credits = 0; showFeedbackToast(`Missed Task: ${block.text}! -60 XP Penalty.`, "penalty"); playSynthSound('error'); } 
-          else { state.gamification.credits += prodMins; showFeedbackToast(`Great focus! +${prodMins} XP earned for ${block.text}`, "success"); }
-          block.locked = true; stateChanged = true;
-        }
-      }
-      if (stateChanged) {
-        saveState();
-        if (!document.getElementById('viewPlanner').classList.contains('hidden')) renderPlanner();
-        const newLevel = getLevel(); if (newLevel > prevLevel) { playSynthSound('levelup'); confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } }); showFeedbackToast(`PROMOTION! You reached Level ${newLevel}!`, "success"); }
-      }
-    }
-
-    // ==========================================
-    // PWA & BOOTSTRAP
-    // ==========================================
     let deferredPrompt;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-    if (isStandalone) {
-      const installBtn = document.getElementById('pwaInstallBtn');
-      if (installBtn) installBtn.classList.add('hidden');
-    }
+    if (isStandalone) { const installBtn = document.getElementById('pwaInstallBtn'); if (installBtn) installBtn.classList.add('hidden'); }
 
     window.addEventListener('beforeinstallprompt', (e) => { 
-      e.preventDefault(); 
-      deferredPrompt = e; 
-      const installBtn = document.getElementById('pwaInstallBtn');
-      if (installBtn && !isStandalone) installBtn.classList.remove('hidden');
+      e.preventDefault(); deferredPrompt = e; 
+      const installBtn = document.getElementById('pwaInstallBtn'); if (installBtn && !isStandalone) installBtn.classList.remove('hidden');
     });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('SW registered successfully'))
-          .catch(err => console.warn('SW registration failed', err));
+        navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered')).catch(err => console.warn('SW failed', err));
       });
     }
 
@@ -1632,10 +1553,8 @@
     if (installBtn) { 
       installBtn.addEventListener('click', async () => { 
         if (deferredPrompt) {
-          deferredPrompt.prompt(); 
-          const { outcome } = await deferredPrompt.userChoice; 
-          if (outcome === 'accepted') installBtn.classList.add('hidden'); 
-          deferredPrompt = null; 
+          deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; 
+          if (outcome === 'accepted') installBtn.classList.add('hidden'); deferredPrompt = null; 
         } else if (isIOS) {
           showFeedbackToast("To install on iOS: Tap 'Share' (square with arrow) -> 'Add to Home Screen'.", "info");
         } else {
@@ -1644,12 +1563,14 @@
       }); 
     }
 
-    setInterval(() => { checkMidnightRollover(); evaluateHourlyProgress(); plannerTickLoop(); }, 1000); 
+    setInterval(() => { checkMidnightRollover(); evaluateHourlyProgress(); plannerTickLoop(); goalTimerTickLoop(); }, 1000); 
 
     window.onload = function() {
       loadState();
+      populateGoalDropdowns();
       updateDashboard();
       renderTasks();
+      renderGoalTasks();
       evaluateHourlyProgress(); 
     };
   </script>
