@@ -436,9 +436,31 @@
           <span id="apiKeyStatusBadge" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">No Key Set</span>
         </div>
 
-        <div class="flex items-center justify-between text-[10px] text-slate-400 bg-slate-950/60 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
-          <span>Active AI Model:</span>
-          <span class="font-mono font-bold text-fuchsia-400">gemini-3.5-flash-lite</span>
+        <div class="flex flex-col gap-1.5 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/90">
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-slate-300 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-microchip text-fuchsia-400"></i> Choose Gemini AI Model:
+            </span>
+            <span id="activeModelLabelBadge" class="font-mono text-[9px] font-bold text-fuchsia-400 bg-fuchsia-500/10 px-2 py-0.5 rounded border border-fuchsia-500/20">gemini-3.8-flash</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 mt-0.5">
+            <button type="button" onclick="setAiModel('gemini-3.8-flash')" id="modelBtn-38flash"
+                    class="model-pill flex flex-col items-start p-2 rounded-lg border transition text-left bg-fuchsia-500/20 border-fuchsia-500 text-slate-100">
+              <div class="flex items-center justify-between w-full">
+                <span class="text-[11px] font-extrabold text-fuchsia-300">3.8 Flash</span>
+                <span class="text-[8px] uppercase font-black bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">Best Results</span>
+              </div>
+              <span class="text-[9px] text-slate-400 mt-0.5 leading-tight">Deeper reasoning & smarter weekly/weekend planning</span>
+            </button>
+            <button type="button" onclick="setAiModel('gemini-3.5-flash-lite')" id="modelBtn-35lite"
+                    class="model-pill flex flex-col items-start p-2 rounded-lg border transition text-left bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700">
+              <div class="flex items-center justify-between w-full">
+                <span class="text-[11px] font-extrabold text-slate-200">3.5 Flash-Lite</span>
+                <span class="text-[8px] uppercase font-black bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/30">Fastest</span>
+              </div>
+              <span class="text-[9px] text-slate-400 mt-0.5 leading-tight">Ultra-fast lightweight daily & hourly scheduling</span>
+            </button>
+          </div>
         </div>
 
         <div class="flex gap-1.5 w-full">
@@ -843,6 +865,7 @@
       rewards: [],
       aiConfig: {
         userApiKey: "",
+        selectedModel: "gemini-3.8-flash", // 'gemini-3.8-flash' | 'gemini-3.5-flash-lite'
         weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)",
         weekendAvailability: "10:00 AM - 4:00 PM (6h/day)",
         todayAvailabilityOverride: "",
@@ -909,7 +932,8 @@
           if (!state.rewards) state.rewards = [];
           if (!state.goalTasks) state.goalTasks = [];
           if (!state.activeGoalTimer) state.activeGoalTimer = { goalId: null, isRunning: false, lastTickMs: null };
-          if (!state.aiConfig) state.aiConfig = { userApiKey: "", weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)", weekendAvailability: "10:00 AM - 4:00 PM (6h/day)", todayAvailabilityOverride: "", operationMode: "smart" };
+          if (!state.aiConfig) state.aiConfig = { userApiKey: "", selectedModel: "gemini-3.8-flash", weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)", weekendAvailability: "10:00 AM - 4:00 PM (6h/day)", todayAvailabilityOverride: "", operationMode: "smart" };
+          if (!state.aiConfig.selectedModel) state.aiConfig.selectedModel = "gemini-3.8-flash";
           if (!state.aiConfig.weekdayAvailability) state.aiConfig.weekdayAvailability = "6:00 PM - 9:00 PM (3h/day)";
           if (!state.aiConfig.weekendAvailability) state.aiConfig.weekendAvailability = "10:00 AM - 4:00 PM (6h/day)";
           if (typeof state.aiConfig.todayAvailabilityOverride !== 'string') state.aiConfig.todayAvailabilityOverride = "";
@@ -1067,10 +1091,38 @@
       saveState();
     }
 
+    function setAiModel(modelId) {
+      state.aiConfig.selectedModel = modelId;
+      saveState();
+      playSynthSound('click');
+      updateAiModelUI();
+      const label = modelId === 'gemini-3.8-flash' ? 'Gemini 3.8 Flash (Best Results)' : 'Gemini 3.5 Flash-Lite (Fastest)';
+      showFeedbackToast(`Switched AI Model to ${label}`, "info");
+    }
+
+    function updateAiModelUI() {
+      const selected = state.aiConfig?.selectedModel || 'gemini-3.8-flash';
+      const badge = document.getElementById('activeModelLabelBadge');
+      if (badge) badge.textContent = selected;
+
+      const btn38 = document.getElementById('modelBtn-38flash');
+      const btn35 = document.getElementById('modelBtn-35lite');
+      if (btn38 && btn35) {
+        if (selected === 'gemini-3.8-flash') {
+          btn38.className = "model-pill flex flex-col items-start p-2 rounded-lg border transition text-left bg-fuchsia-500/20 border-fuchsia-500 text-slate-100 shadow-[0_0_12px_rgba(217,70,239,0.2)]";
+          btn35.className = "model-pill flex flex-col items-start p-2 rounded-lg border transition text-left bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700";
+        } else {
+          btn35.className = "model-pill flex flex-col items-start p-2 rounded-lg border transition text-left bg-fuchsia-500/20 border-fuchsia-500 text-slate-100 shadow-[0_0_12px_rgba(217,70,239,0.2)]";
+          btn38.className = "model-pill flex flex-col items-start p-2 rounded-lg border transition text-left bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700";
+        }
+      }
+    }
+
     function setAiOperationMode(mode) {
       state.aiConfig.operationMode = mode;
       saveState();
       playSynthSound('click');
+      updateAiModelUI();
       updateAiOperationModeUI();
     }
 
@@ -1306,10 +1358,12 @@
       const userPromptEl = document.getElementById('aiPromptInput');
       const userRequest = (userPromptEl?.value || "").trim() || "Create or reschedule my Master Task Timers, Weekly plan (Mon-Sun), and Today's Hourly schedule to fit my available time slots, and calculate my weekend completion hours and percentage.";
 
+      const activeModelId = (state.aiConfig?.selectedModel || AI_MODEL_ID).trim();
+      const shortModelLabel = activeModelId === 'gemini-3.8-flash' ? 'GEMINI 3.8 FLASH' : 'GEMINI 3.5 FLASH-LITE';
       const btn = document.getElementById('aiGenerateBtn');
       const originalBtnHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>AI ANALYZING & RESCHEDULING PLAN...</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${shortModelLabel} PLANNING...</span>`;
       playSynthSound('click');
 
       try {
@@ -1564,10 +1618,10 @@ CRITICAL CAPABILITIES & RULES:
           }
         };
 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL_ID}:generateContent?key=${encodeURIComponent(activeKey)}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(activeModelId)}:generateContent?key=${encodeURIComponent(activeKey)}`;
         const result = await fetchGeminiWithBackoff(apiUrl, payload);
         const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!rawJson) throw new Error("Empty response from Gemini 3.5 Flash-Lite.");
+        if (!rawJson) throw new Error(`Empty response from ${activeModelId}.`);
 
         const parsed = JSON.parse(rawJson);
         lastAiProposal = parsed;
