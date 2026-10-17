@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.svg">
   
-  <title>PickFlow - Ultimate Task Picker & Planner</title>
+  <title>PickFlow - Ultimate Task Picker & AI Planner</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -48,7 +48,7 @@
     
     .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); }
     ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 99px; }
     
@@ -115,7 +115,7 @@
         </div>
         <div>
           <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">PickFlow</h1>
-          <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Productivity Suite</p>
+          <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">AI Productivity Suite</p>
         </div>
       </div>
       
@@ -123,7 +123,7 @@
         <button id="pwaInstallBtn" class="hidden text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
           <i class="fa-solid fa-download"></i> Install
         </button>
-        <button onclick="switchTab('ai')" title="AI Smart Scheduler & API Key" class="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-fuchsia-400 hover:text-fuchsia-300 border border-fuchsia-500/30 transition">
+        <button onclick="switchTab('ai')" title="AI Master & Weekly Scheduler" class="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-fuchsia-400 hover:text-fuchsia-300 border border-fuchsia-500/30 transition">
           <i class="fa-solid fa-robot"></i>
         </button>
         <button onclick="toggleAudio()" id="audioToggleBtn" class="w-9 h-9 rounded-xl glass-card flex items-center justify-center text-slate-300 hover:text-white transition">
@@ -254,7 +254,7 @@
           <span class="text-[10px] bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded font-bold border border-emerald-500/30">Auto-Syncs</span>
         </div>
         <p class="text-[10px] text-slate-400 leading-snug">
-          Create long-term multi-hour tasks here. Work on them directly, or link them to your <strong>Daily</strong>, <strong>Hourly</strong>, or <strong>Weekly</strong> schedules. Time spent syncs back here!
+          Create long-term multi-hour tasks here, or let <strong>AI Plan</strong> generate them and distribute them across your week! Time spent in Daily, Hourly, or Weekly tasks syncs back here automatically.
         </p>
 
         <form onsubmit="handleAddGoalTask(event)" class="flex flex-col gap-2.5 mt-1">
@@ -331,8 +331,8 @@
             <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
           </div>
           <div class="flex flex-col min-w-0">
-            <span class="text-xs font-bold text-slate-100 truncate">Need help planning your hours?</span>
-            <span class="text-[10px] text-slate-400 truncate">Let Gemini 3.5 Flash-Lite optimize your day</span>
+            <span class="text-xs font-bold text-slate-100 truncate">Want AI to plan your Day, Week & Timers?</span>
+            <span class="text-[10px] text-slate-400 truncate">Auto-schedule available hours & see Weekend % forecast</span>
           </div>
         </div>
         <button onclick="switchTab('ai')" class="px-3 py-1.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-[10px] font-bold transition flex-shrink-0 shadow-md shadow-fuchsia-500/20">
@@ -348,10 +348,15 @@
     <!-- ============================================== -->
     <div id="viewWeekly" class="hidden flex-col gap-5 w-full">
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
-        <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2 mb-1">
-          <i class="fa-solid fa-calendar-days text-purple-400"></i> Weekly Schedule
-        </h2>
-        <p class="text-[10px] text-slate-400 mb-1 leading-snug">Tasks auto-inject into Today's Backlog on their day!</p>
+        <div class="flex justify-between items-center mb-1">
+          <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-purple-400"></i> Weekly Schedule
+          </h2>
+          <button onclick="switchTab('ai')" class="text-[10px] bg-fuchsia-600/20 hover:bg-fuchsia-600/40 text-fuchsia-300 border border-fuchsia-500/30 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1">
+            <i class="fa-solid fa-robot"></i> AI Distribute Week
+          </button>
+        </div>
+        <p class="text-[10px] text-slate-400 mb-1 leading-snug">Tasks auto-inject into Today's Backlog on their scheduled day! Linked Master Timers sync automatically.</p>
         
         <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x scrollbar-hide" id="weeklyDaySelector"></div>
 
@@ -360,15 +365,17 @@
             <option value="">-- Optional: Link a Master Timer Task --</option>
           </select>
           <div class="flex gap-1.5 sm:gap-2">
-            <input type="text" id="weeklyTaskInput" placeholder="Plan a task..." required maxlength="80"
+            <input type="text" id="weeklyTaskInput" placeholder="Plan a task for this day..." required maxlength="80"
                    class="glass-input flex-1 min-w-0 px-3 py-2.5 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
+            <input type="text" id="weeklyTaskSlotInput" placeholder="Slot (e.g. 6-8PM)" maxlength="25"
+                   class="glass-input w-28 px-2.5 py-2.5 rounded-xl text-[11px] text-purple-300 placeholder-slate-500 focus:outline-none flex-shrink-0">
             <button type="submit" class="w-10 h-10 bg-purple-600 hover:bg-purple-500 text-white rounded-xl flex items-center justify-center transition active:scale-95 shadow-md shadow-purple-500/20 flex-shrink-0">
               <i class="fa-solid fa-plus text-sm"></i>
             </button>
           </div>
         </form>
 
-        <div id="weeklyTaskList" class="max-h-60 overflow-y-auto flex flex-col gap-2 pr-1 min-h-[100px] mt-2 border-t border-slate-800/80 pt-3"></div>
+        <div id="weeklyTaskList" class="max-h-64 overflow-y-auto flex flex-col gap-2 pr-1 min-h-[100px] mt-2 border-t border-slate-800/80 pt-3"></div>
       </div>
 
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
@@ -430,62 +437,173 @@
         </p>
       </div>
 
-      <!-- AI TASK & TIMER SNAPSHOT -->
+      <!-- AI MASTER PLANNER & AVAILABILITY INPUT -->
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
         <div class="flex justify-between items-center">
           <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-            <i class="fa-solid fa-brain text-fuchsia-400"></i> AI Scheduler Assistant
+            <i class="fa-solid fa-brain text-fuchsia-400"></i> Full-Stack AI Planner
           </h2>
           <span id="aiContextSummaryBadge" class="text-[9px] bg-blue-500/15 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30 font-semibold">0 Tasks Ready</span>
         </div>
 
         <p class="text-[10px] text-slate-400 leading-snug">
-          Tell the AI your available hours, energy levels, or priorities. It will analyze your <strong>Daily Backlog</strong>, <strong>Master Task Timers</strong>, and <strong>Weekly Plan</strong> to build an optimized schedule.
+          Tell AI your <strong>available time windows</strong> and the <strong>tasks/projects</strong> you need to do. AI will create <strong>Master Task Timers</strong>, distribute tasks across your <strong>7-Day Weekly Schedule</strong>, fill today's <strong>Daily & Hourly slots</strong>, and calculate your <strong>Weekend Completion Forecast (Hours & %)</strong>!
         </p>
+
+        <!-- Structured Availability Helper -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3 flex flex-col gap-2.5">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 flex items-center gap-1.5">
+              <i class="fa-regular fa-clock"></i> Your Daily & Weekend Availability
+            </span>
+            <span class="text-[9px] text-slate-500">Auto-included in AI plan</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="flex flex-col gap-1">
+              <label class="text-[9px] text-slate-400 font-semibold">Mon–Fri Available Times</label>
+              <input type="text" id="aiWeekdayAvailInput" value="6:00 PM - 9:00 PM (3h/day)" onchange="saveAvailabilityPrefs()"
+                     placeholder="e.g. 6 PM - 9 PM (3h)"
+                     class="glass-input px-2.5 py-1.5 rounded-lg text-[11px] text-slate-200 focus:outline-none">
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-[9px] text-emerald-400 font-semibold">Sat–Sun (Weekend) Times</label>
+              <input type="text" id="aiWeekendAvailInput" value="10:00 AM - 4:00 PM (6h/day)" onchange="saveAvailabilityPrefs()"
+                     placeholder="e.g. 10 AM - 4 PM (6h)"
+                     class="glass-input px-2.5 py-1.5 rounded-lg text-[11px] text-emerald-300 focus:outline-none">
+            </div>
+          </div>
+        </div>
 
         <!-- Quick Prompt Chips -->
         <div class="flex flex-wrap gap-1.5">
-          <button type="button" onclick="setAiQuickPrompt('Schedule my pending tasks and Master Timers into my remaining free hours today with a 1-hour break.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/80 px-2.5 py-1 rounded-lg transition">
-            ⚡ Schedule rest of today
+          <button type="button" onclick="setAiQuickPrompt('I need to complete: 1) Build Portfolio App (15 hours), 2) Study Data Structures (10 hours), and 3) Fitness & Reading (5 hours). Create Master Timers for these, distribute them across my entire week (Mon-Sun) and today hourly schedule using my available times, and tell me how many hours and what % of each task I can finish this weekend.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border border-fuchsia-500/30 px-2.5 py-1 rounded-lg transition">
+            🚀 Create Master Timers + Full Week Plan
           </button>
-          <button type="button" onclick="setAiQuickPrompt('Focus heavily on my Master Timer goals today. Allocate deep work blocks in my available hours.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg transition">
-            ⏱️ Prioritize Master Timers
+          <button type="button" onclick="setAiQuickPrompt('Distribute all my existing Master Task Timers and pending Daily tasks across the entire week (Mon-Sun) and today hourly slots based on my weekday and weekend availability. Show how much % and hours I will complete by the end of the weekend.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg transition">
+            📅 Distribute My Tasks Across Week
           </button>
-          <button type="button" onclick="setAiQuickPrompt('I only have 3 hours available starting right now. Pick the most important tasks and schedule them.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-lg transition">
-            🎯 3-Hour Sprint
+          <button type="button" onclick="setAiQuickPrompt('Weekend Sprint Mode: Plan an intensive Saturday & Sunday schedule alongside my weekday hours. Calculate the exact hours and percentage of each Master Task I will conquer over the weekend!')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg transition">
+            📊 Weekend % Forecast
+          </button>
+          <button type="button" onclick="setAiQuickPrompt('I am free from 10 AM to 6 PM today with lunch at 1 PM. Schedule my tasks for today and distribute the remaining work across the rest of the week.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-lg transition">
+            ⚡ Today + Rest of Week
           </button>
         </div>
 
         <div class="flex flex-col gap-2">
-          <textarea id="aiPromptInput" rows="3" placeholder="E.g., I am free from 10 AM to 6 PM today, with lunch at 1 PM. Schedule my tasks and allocate 2 hours to my Master Timer project..."
+          <textarea id="aiPromptInput" rows="4" placeholder="Describe your tasks, total hours needed, and your available times in a day (e.g., 'I have 2 hours on weekdays 7-9 PM and 5 hours on Sat & Sun 10 AM-3 PM. I need to finish: UI Redesign (12h), Backend API (8h), and Exam Prep (6h)...')"
                     class="glass-input w-full p-3 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none resize-none"></textarea>
 
-          <label class="flex items-center justify-between text-[10px] text-slate-300 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800 cursor-pointer">
-            <span class="flex items-center gap-1.5">
-              <i class="fa-solid fa-bolt text-amber-400"></i> Auto-apply generated schedule to Hourly & Daily tabs
-            </span>
-            <input type="checkbox" id="aiAutoApplyToggle" checked class="accent-fuchsia-500 w-3.5 h-3.5 rounded">
-          </label>
+          <!-- Granular Sync Scopes -->
+          <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold text-slate-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-layer-group text-fuchsia-400"></i> Auto-Apply Generated Plans To:
+              </span>
+              <label class="flex items-center gap-1 text-[10px] text-fuchsia-300 font-semibold cursor-pointer">
+                <input type="checkbox" id="aiAutoApplyToggle" checked class="accent-fuchsia-500 w-3.5 h-3.5 rounded">
+                Auto-apply on generate
+              </label>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-800/80">
+              <label class="flex items-center gap-1.5 text-[9px] text-emerald-300 bg-slate-950/60 px-2 py-1.5 rounded-lg border border-slate-800 cursor-pointer">
+                <input type="checkbox" id="scopeApplyGoals" checked class="accent-emerald-500 w-3 h-3 rounded">
+                <span>Master Timers</span>
+              </label>
+              <label class="flex items-center gap-1.5 text-[9px] text-purple-300 bg-slate-950/60 px-2 py-1.5 rounded-lg border border-slate-800 cursor-pointer">
+                <input type="checkbox" id="scopeApplyWeekly" checked class="accent-purple-500 w-3 h-3 rounded">
+                <span>Weekly Plan</span>
+              </label>
+              <label class="flex items-center gap-1.5 text-[9px] text-blue-300 bg-slate-950/60 px-2 py-1.5 rounded-lg border border-slate-800 cursor-pointer">
+                <input type="checkbox" id="scopeApplyDailyHourly" checked class="accent-blue-500 w-3 h-3 rounded">
+                <span>Daily & Hourly</span>
+              </label>
+            </div>
+          </div>
 
-          <button type="button" onclick="generateAiSchedule()" id="aiGenerateBtn" class="glow-btn w-full py-3 px-4 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-fuchsia-500/20 flex items-center justify-center gap-2 text-xs active:scale-95 transition">
+          <button type="button" onclick="generateAiSchedule()" id="aiGenerateBtn" class="glow-btn w-full py-3.5 px-4 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-fuchsia-500/20 flex items-center justify-center gap-2 text-xs active:scale-95 transition">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>ANALYZE & SCHEDULE MY DAY</span>
+            <span>GENERATE MASTER TIMERS, WEEKLY & HOURLY PLAN</span>
           </button>
         </div>
       </div>
 
-      <!-- AI GENERATED SCHEDULE PREVIEW / RESULT -->
-      <div id="aiResultCard" class="glass-card rounded-2xl p-4 hidden flex-col gap-3 border border-emerald-500/30">
+      <!-- AI GENERATED SCHEDULE & WEEKEND FORECAST PREVIEW -->
+      <div id="aiResultCard" class="glass-card rounded-2xl p-4 hidden flex-col gap-4 border border-emerald-500/30">
         <div class="flex justify-between items-center">
           <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-Sparkles"></i> AI Proposed Schedule
+            <i class="fa-solid fa-sparkles"></i> AI Master Plan & Weekend Forecast
           </h3>
-          <button type="button" onclick="applyLastAiProposal()" id="aiManualApplyBtn" class="text-[10px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-2.5 py-1 rounded-lg transition shadow-md">
-            <i class="fa-solid fa-check mr-1"></i> Apply to Planner
+          <button type="button" onclick="applyLastAiProposal(false)" id="aiManualApplyBtn" class="text-[10px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-2.5 py-1 rounded-lg transition shadow-md">
+            <i class="fa-solid fa-check-double mr-1"></i> Apply All Now
           </button>
         </div>
+
+        <!-- Strategy Summary -->
         <p id="aiAnalysisText" class="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 leading-relaxed"></p>
-        <div id="aiProposedHoursList" class="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1"></div>
+
+        <!-- SECTION 1: WEEKEND & WEEKLY COMPLETION FORECAST -->
+        <div id="aiForecastSection" class="flex flex-col gap-2.5 bg-gradient-to-br from-emerald-950/30 via-slate-950/80 to-fuchsia-950/30 p-3.5 rounded-2xl border border-emerald-500/30">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie"></i> Weekend Completion Forecast
+            </span>
+            <span id="aiWeekendTotalBadge" class="text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">0h (0%)</span>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-2 text-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
+            <div>
+              <span class="block text-[9px] text-slate-400 uppercase">Mon–Fri Plan</span>
+              <span id="forecastWeekdayHrs" class="text-sm font-mono font-bold text-blue-400">0h</span>
+            </div>
+            <div class="border-x border-slate-800">
+              <span class="block text-[9px] text-emerald-400 uppercase font-bold">Sat–Sun Sprint</span>
+              <span id="forecastWeekendHrs" class="text-sm font-mono font-bold text-emerald-400">0h</span>
+            </div>
+            <div>
+              <span class="block text-[9px] text-fuchsia-400 uppercase font-bold">Done by Sun</span>
+              <span id="forecastCumulativePct" class="text-sm font-mono font-bold text-fuchsia-400">0%</span>
+            </div>
+          </div>
+
+          <p id="aiWeekendAdviceText" class="text-[10px] text-slate-300 italic leading-snug"></p>
+
+          <!-- Per-Task Completion Bars -->
+          <div id="aiTaskForecastList" class="flex flex-col gap-2 mt-1"></div>
+        </div>
+
+        <!-- SECTION 2: NEW / LINKED MASTER TASK TIMERS -->
+        <div id="aiMasterTimersSection" class="flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-stopwatch"></i> Master Task Timers Created / Linked
+            </span>
+            <span id="aiMasterTimersCount" class="text-[9px] text-slate-400 font-mono">0 Timers</span>
+          </div>
+          <div id="aiProposedMasterTimersList" class="flex flex-col gap-1.5"></div>
+        </div>
+
+        <!-- SECTION 3: 7-DAY WEEKLY SCHEDULE DISTRIBUTION -->
+        <div id="aiWeeklyPlanSection" class="flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-week"></i> 7-Day Weekly Schedule Distribution
+            </span>
+            <span id="aiWeeklyTasksCount" class="text-[9px] text-slate-400 font-mono">0 Blocks</span>
+          </div>
+          <div id="aiProposedWeeklyList" class="flex flex-col gap-2 max-h-80 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- SECTION 4: TODAY'S HOURLY SCHEDULE -->
+        <div id="aiHourlyPlanSection" class="flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+              <i class="fa-regular fa-clock"></i> Today's Hourly Schedule
+            </span>
+            <span id="aiHourlyTasksCount" class="text-[9px] text-slate-400 font-mono">0 Hours</span>
+          </div>
+          <div id="aiProposedHoursList" class="flex flex-col gap-1.5 max-h-64 overflow-y-auto pr-1"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -609,7 +727,9 @@
     let localPickerInterval = null;
     let selectedWeeklyDay = "Mon"; 
     let lastAiProposal = null;
+    let lastProposalApplied = false;
     const dayNamesList = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const orderedWeekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     let state = {
       tasks: [], // Daily backlog tasks: { id, text, priority, goalId, completed, createdAt }
@@ -635,7 +755,11 @@
       gamification: { credits: 0 },
       weeklyPlan: { Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [] },
       rewards: [],
-      aiConfig: { userApiKey: "" }
+      aiConfig: {
+        userApiKey: "",
+        weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)",
+        weekendAvailability: "10:00 AM - 4:00 PM (6h/day)"
+      }
     };
 
     function formatDate(date) {
@@ -693,10 +817,13 @@
           if (!state.gamification) state.gamification = { credits: 0 };
           if (!state.pickerTimer) state.pickerTimer = { activeTaskId: null, isRunning: false, targetTime: null, lastTickMs: null, remainingTime: DEFAULT_TIMER_MS };
           if (!state.weeklyPlan) state.weeklyPlan = { Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [] };
+          dayNamesList.forEach(d => { if (!Array.isArray(state.weeklyPlan[d])) state.weeklyPlan[d] = []; });
           if (!state.rewards) state.rewards = [];
           if (!state.goalTasks) state.goalTasks = [];
           if (!state.activeGoalTimer) state.activeGoalTimer = { goalId: null, isRunning: false, lastTickMs: null };
-          if (!state.aiConfig) state.aiConfig = { userApiKey: "" };
+          if (!state.aiConfig) state.aiConfig = { userApiKey: "", weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)", weekendAvailability: "10:00 AM - 4:00 PM (6h/day)" };
+          if (!state.aiConfig.weekdayAvailability) state.aiConfig.weekdayAvailability = "6:00 PM - 9:00 PM (3h/day)";
+          if (!state.aiConfig.weekendAvailability) state.aiConfig.weekendAvailability = "10:00 AM - 4:00 PM (6h/day)";
 
           state.goalTasks = state.goalTasks.map(ensureGoalProps);
 
@@ -796,7 +923,7 @@
       else if (type === "reward") { icon = "fa-gift text-amber-400"; bg = "bg-slate-900 border-amber-500/50 text-amber-400"; }
 
       toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] border shadow-2xl px-5 py-3 rounded-xl text-xs font-bold text-center flex items-center gap-2 animate-bounce ${bg}`;
-      toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${msg}`;
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
       document.body.appendChild(toast);
       setTimeout(() => { toast.remove(); }, 4000);
     }
@@ -840,6 +967,14 @@
       }
     }
 
+    function saveAvailabilityPrefs() {
+      const wd = document.getElementById('aiWeekdayAvailInput');
+      const we = document.getElementById('aiWeekendAvailInput');
+      if (wd) state.aiConfig.weekdayAvailability = wd.value.trim();
+      if (we) state.aiConfig.weekendAvailability = we.value.trim();
+      saveState();
+    }
+
     function renderAiView() {
       const keyInput = document.getElementById('geminiApiKeyInput');
       const badge = document.getElementById('apiKeyStatusBadge');
@@ -857,11 +992,18 @@
         }
       }
 
+      const wdInput = document.getElementById('aiWeekdayAvailInput');
+      const weInput = document.getElementById('aiWeekendAvailInput');
+      if (wdInput && document.activeElement !== wdInput) wdInput.value = state.aiConfig.weekdayAvailability || "6:00 PM - 9:00 PM (3h/day)";
+      if (weInput && document.activeElement !== weInput) weInput.value = state.aiConfig.weekendAvailability || "10:00 AM - 4:00 PM (6h/day)";
+
       const pendingDaily = state.tasks.filter(t => !t.completed).length;
       const activeGoals = state.goalTasks.filter(g => !g.completed).length;
+      let weeklyCount = 0;
+      dayNamesList.forEach(d => { weeklyCount += (state.weeklyPlan[d] || []).length; });
       const summaryBadge = document.getElementById('aiContextSummaryBadge');
       if (summaryBadge) {
-        summaryBadge.textContent = `${pendingDaily} Daily • ${activeGoals} Timers`;
+        summaryBadge.textContent = `${activeGoals} Timers • ${pendingDaily} Daily • ${weeklyCount} Wk`;
       }
     }
 
@@ -928,6 +1070,7 @@
     }
 
     async function generateAiSchedule() {
+      saveAvailabilityPrefs();
       const effectiveKey = (state.aiConfig?.userApiKey || "").trim() || apiKey;
       const inpField = document.getElementById('geminiApiKeyInput');
       if (!effectiveKey && inpField && inpField.value.trim()) {
@@ -943,12 +1086,12 @@
       }
 
       const userPromptEl = document.getElementById('aiPromptInput');
-      const userRequest = (userPromptEl?.value || "").trim() || "Schedule my active tasks and master timers optimally for the rest of today.";
+      const userRequest = (userPromptEl?.value || "").trim() || "Create Master Task Timers as needed, distribute my tasks across the entire week (Mon-Sun) and today's hourly schedule based on my availability, and calculate my weekend completion hours and percentage.";
 
       const btn = document.getElementById('aiGenerateBtn');
       const originalBtnHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>GEMINI 3.5 FLASH-LITE THINKING...</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>PLANNING MASTER TIMERS, WEEK & WEEKEND %...</span>`;
       playSynthSound('click');
 
       try {
@@ -968,17 +1111,23 @@
           return {
             id: g.id,
             text: g.text,
-            remainingMinutes: Math.ceil(g.remainingMs / 60000),
-            totalExpectedMinutes: Math.ceil(g.expectedMs / 60000)
+            remainingHours: Number((g.remainingMs / 3600000).toFixed(2)),
+            spentHours: Number((g.spentMs / 3600000).toFixed(2)),
+            totalExpectedHours: Number((g.expectedMs / 3600000).toFixed(2))
           };
         });
 
-        const todayWeeklyTasks = (state.weeklyPlan[todayDayName] || []).map(w => ({
-          id: w.id,
-          text: w.text,
-          priority: w.priority,
-          linkedGoalId: w.goalId || null
-        }));
+        const currentWeeklySummary = {};
+        dayNamesList.forEach(d => {
+          currentWeeklySummary[d] = (state.weeklyPlan[d] || []).map(w => ({
+            id: w.id,
+            text: w.text,
+            priority: w.priority,
+            linkedGoalId: w.goalId || null,
+            allocatedHours: w.allocatedHours || 1,
+            timeWindow: w.timeWindow || ""
+          }));
+        });
 
         const existingHourly = {};
         for (let h = 6; h <= 23; h++) {
@@ -988,24 +1137,34 @@
           }
         }
 
-        const systemInstruction = `You are PickFlow AI, an expert productivity & time-management scheduler.
-Analyze the user's pending Daily Backlog tasks, multi-hour Master Task Timers (Goals), Weekly planned tasks for today (${todayDayName}), and their Hourly Day Planner (valid hours are integers from 6 to 23, where 6 = 6:00 AM and 23 = 11:00 PM).
-Current local hour (24h format): ${currentHour}:00.
-Rules:
-1. Respect the user's availability or time constraints stated in their prompt. If they don't specify hours, schedule starting from max(6, ${currentHour}) up to 22 or 23.
-2. Do not overwrite past hours (< ${currentHour}) that are already locked.
-3. Prioritize high-priority daily tasks and active Master Task Timers (which may need multiple 1-hour blocks if they have > 60 remainingMinutes).
-4. Whenever you schedule an existing Master Task Timer into an hour slot, set "sourceType" to "goal" and "linkedId" to its exact id.
-5. Whenever you schedule an existing Daily Backlog task into an hour slot, set "sourceType" to "daily" and "linkedId" to its exact id.
-6. If you suggest any new actionable daily tasks to add to Today's backlog, include them in "newDailyTasks".`;
+        const systemInstruction = `You are PickFlow AI, an intelligent full-stack time-management & master task planner.
+You help the user:
+1. Create NEW Master Task Timers ("newMasterGoalTimers") with total expected hours whenever the user mentions new projects, study topics, or multi-hour tasks to complete (or if they need structured Master Timers for their goals). Assign each new master timer a unique "tempKey" (e.g. "goal_1", "goal_2"). For existing activeMasterGoalTimers, reference their exact "id".
+2. Distribute tasks across the ENTIRE 7-Day Week ("weeklySchedule" covering "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun") respecting the user's stated daily/weekday/weekend available time windows. Each weekly item must include "day", "taskText", "priority" ("low"|"medium"|"high"), "allocatedHours" (number of hours on that day), "timeWindow" (e.g. "6:00 PM - 8:00 PM"), and "linkedGoalRef" (matching either an existing goal "id" or a new master timer "tempKey").
+3. Plan TODAY's Hourly Schedule ("hourlySchedule", integer hours 6 to 23, where 6 = 6:00 AM and 23 = 11:00 PM) and Today's Daily Backlog ("newDailyTasks") respecting the user's available hours today (${todayDayName}, current hour: ${currentHour}:00). Do not overwrite locked past hours (< ${currentHour}). Link hourly slots and daily tasks to their Master Task Timer via "linkedGoalRef".
+4. Calculate a detailed Weekend & Weekly Completion Forecast ("completionForecast") showing how many hours and what percentage of each task (and overall workload) the user will complete over the weekend (Saturday + Sunday) and cumulatively by Sunday night if they follow the schedule:
+   - "weekdayAvailableHours": total planned hours across Mon–Fri
+   - "weekendAvailableHours": total planned hours across Sat + Sun
+   - "overallWeekendCompletionPct": overall % of total remaining workload completed by Sunday night
+   - "weekendAdvice": a warm, motivating 1-2 sentence breakdown explaining how many hours and what % of their goals they will crush in the weekend if they follow this plan.
+   - "taskForecasts": array covering every active and newly created Master Task Timer with:
+     * "taskTitle": string
+     * "totalTaskHours": total hours required for the task
+     * "weekdayHoursPlanned": hours scheduled Mon–Fri
+     * "weekendHoursPlanned": hours scheduled on Sat + Sun
+     * "weekendOnlyCompletionPct": percentage of totalTaskHours completed specifically during Sat + Sun ((weekendHoursPlanned / totalTaskHours) * 100)
+     * "cumulativeCompletionBySundayPct": total percentage of the task completed by Sunday night including prior spentHours + weekdayHoursPlanned + weekendHoursPlanned (capped at 100)
+     * "remainingHoursAfterWeekend": hours left after Sunday night (max 0)`;
 
         const contextPayload = JSON.stringify({
           currentHour24: currentHour,
           todayDayOfWeek: todayDayName,
+          statedWeekdayAvailability: state.aiConfig.weekdayAvailability,
+          statedWeekendAvailability: state.aiConfig.weekendAvailability,
           userRequest: userRequest,
-          pendingDailyBacklog: pendingDaily,
           activeMasterGoalTimers: activeGoalTimers,
-          weeklyTasksForToday: todayWeeklyTasks,
+          pendingDailyBacklog: pendingDaily,
+          currentWeeklyPlan: currentWeeklySummary,
           currentHourlySchedule: existingHourly
         });
 
@@ -1018,6 +1177,34 @@ Rules:
               type: "OBJECT",
               properties: {
                 analysisSummary: { type: "STRING" },
+                newMasterGoalTimers: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      tempKey: { type: "STRING" },
+                      text: { type: "STRING" },
+                      expectedHours: { type: "NUMBER" },
+                      reason: { type: "STRING" }
+                    },
+                    required: ["tempKey", "text", "expectedHours"]
+                  }
+                },
+                weeklySchedule: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      day: { type: "STRING" },
+                      taskText: { type: "STRING" },
+                      priority: { type: "STRING" },
+                      allocatedHours: { type: "NUMBER" },
+                      timeWindow: { type: "STRING" },
+                      linkedGoalRef: { type: "STRING" }
+                    },
+                    required: ["day", "taskText", "priority", "allocatedHours", "timeWindow"]
+                  }
+                },
                 hourlySchedule: {
                   type: "ARRAY",
                   items: {
@@ -1026,7 +1213,7 @@ Rules:
                       hour: { type: "INTEGER" },
                       taskText: { type: "STRING" },
                       sourceType: { type: "STRING" },
-                      linkedId: { type: "STRING" },
+                      linkedGoalRef: { type: "STRING" },
                       reason: { type: "STRING" }
                     },
                     required: ["hour", "taskText", "sourceType", "reason"]
@@ -1038,13 +1225,54 @@ Rules:
                     type: "OBJECT",
                     properties: {
                       text: { type: "STRING" },
-                      priority: { type: "STRING" }
+                      priority: { type: "STRING" },
+                      linkedGoalRef: { type: "STRING" }
                     },
                     required: ["text", "priority"]
                   }
+                },
+                completionForecast: {
+                  type: "OBJECT",
+                  properties: {
+                    weekdayAvailableHours: { type: "NUMBER" },
+                    weekendAvailableHours: { type: "NUMBER" },
+                    overallWeekendCompletionPct: { type: "NUMBER" },
+                    weekendAdvice: { type: "STRING" },
+                    taskForecasts: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          taskTitle: { type: "STRING" },
+                          totalTaskHours: { type: "NUMBER" },
+                          weekdayHoursPlanned: { type: "NUMBER" },
+                          weekendHoursPlanned: { type: "NUMBER" },
+                          weekendOnlyCompletionPct: { type: "NUMBER" },
+                          cumulativeCompletionBySundayPct: { type: "NUMBER" },
+                          remainingHoursAfterWeekend: { type: "NUMBER" }
+                        },
+                        required: [
+                          "taskTitle",
+                          "totalTaskHours",
+                          "weekdayHoursPlanned",
+                          "weekendHoursPlanned",
+                          "weekendOnlyCompletionPct",
+                          "cumulativeCompletionBySundayPct",
+                          "remainingHoursAfterWeekend"
+                        ]
+                      }
+                    }
+                  },
+                  required: [
+                    "weekdayAvailableHours",
+                    "weekendAvailableHours",
+                    "overallWeekendCompletionPct",
+                    "weekendAdvice",
+                    "taskForecasts"
+                  ]
                 }
               },
-              required: ["analysisSummary", "hourlySchedule"]
+              required: ["analysisSummary", "weeklySchedule", "hourlySchedule", "completionForecast"]
             }
           }
         };
@@ -1056,6 +1284,7 @@ Rules:
 
         const parsed = JSON.parse(rawJson);
         lastAiProposal = parsed;
+        lastProposalApplied = false;
         renderAiProposal(parsed);
 
         const autoApply = document.getElementById('aiAutoApplyToggle')?.checked;
@@ -1063,7 +1292,7 @@ Rules:
           applyLastAiProposal(true);
         } else {
           playSynthSound('congrats');
-          showFeedbackToast("AI Schedule ready! Review & tap Apply below.", "success");
+          showFeedbackToast("AI Master Plan & Weekend Forecast ready! Review below.", "success");
         }
       } catch (err) {
         playSynthSound('error');
@@ -1077,20 +1306,151 @@ Rules:
     function renderAiProposal(proposal) {
       const card = document.getElementById('aiResultCard');
       const summaryEl = document.getElementById('aiAnalysisText');
-      const listEl = document.getElementById('aiProposedHoursList');
-      if (!card || !summaryEl || !listEl) return;
+      if (!card || !summaryEl) return;
 
       card.classList.remove('hidden');
       card.classList.add('flex');
-      summaryEl.textContent = proposal.analysisSummary || "Here is your optimized schedule:";
-      listEl.innerHTML = '';
+      summaryEl.textContent = proposal.analysisSummary || "Here is your optimized Master Timer, Weekly, and Hourly schedule:";
 
+      // 1. Render Weekend & Weekly Completion Forecast
+      const fc = proposal.completionForecast || {};
+      const wkdayHrs = Number(fc.weekdayAvailableHours || 0).toFixed(1);
+      const wkendHrs = Number(fc.weekendAvailableHours || 0).toFixed(1);
+      const overallPct = Math.min(100, Math.max(0, Math.round(fc.overallWeekendCompletionPct || 0)));
+
+      document.getElementById('forecastWeekdayHrs').textContent = `${wkdayHrs}h`;
+      document.getElementById('forecastWeekendHrs').textContent = `${wkendHrs}h`;
+      document.getElementById('forecastCumulativePct').textContent = `${overallPct}%`;
+      document.getElementById('aiWeekendTotalBadge').textContent = `${wkendHrs}h Weekend (${overallPct}% Total)`;
+      document.getElementById('aiWeekendAdviceText').textContent = fc.weekendAdvice || `By following this plan, you'll invest ${wkendHrs}h over Saturday & Sunday and reach ${overallPct}% completion across your tasks!`;
+
+      const forecastListEl = document.getElementById('aiTaskForecastList');
+      forecastListEl.innerHTML = '';
+      const taskForecasts = fc.taskForecasts || [];
+      if (taskForecasts.length === 0) {
+        forecastListEl.innerHTML = `<div class="text-[10px] text-slate-500 italic">No task-specific forecast items returned.</div>`;
+      } else {
+        taskForecasts.forEach(tf => {
+          const totalH = Math.max(0.5, Number(tf.totalTaskHours || 1));
+          const wdH = Number(tf.weekdayHoursPlanned || 0);
+          const weH = Number(tf.weekendHoursPlanned || 0);
+          const remH = Math.max(0, Number(tf.remainingHoursAfterWeekend ?? (totalH - wdH - weH)));
+          const weekendOnlyPct = Math.min(100, Math.max(0, Math.round(tf.weekendOnlyCompletionPct ?? ((weH / totalH) * 100))));
+          const cumPct = Math.min(100, Math.max(0, Math.round(tf.cumulativeCompletionBySundayPct ?? (((wdH + weH) / totalH) * 100))));
+          const wdBarPct = Math.min(100, Math.max(0, (wdH / totalH) * 100));
+          const weBarPct = Math.min(100 - wdBarPct, Math.max(0, (weH / totalH) * 100));
+
+          const item = document.createElement('div');
+          item.className = "bg-slate-950/90 border border-slate-800/90 rounded-xl p-2.5 flex flex-col gap-1.5";
+          item.innerHTML = `
+            <div class="flex justify-between items-start gap-2">
+              <span class="text-xs font-bold text-slate-100 truncate">${tf.taskTitle}</span>
+              <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 flex-shrink-0">
+                Weekend: +${weH.toFixed(1)}h (${weekendOnlyPct}%)
+              </span>
+            </div>
+            <div class="flex justify-between text-[9px] text-slate-400 font-medium">
+              <span>Total: <strong class="text-slate-200">${totalH.toFixed(1)}h</strong> • Mon-Fri: <strong class="text-blue-400">${wdH.toFixed(1)}h</strong> • Sat-Sun: <strong class="text-emerald-400">${weH.toFixed(1)}h</strong></span>
+              <span class="text-fuchsia-300 font-bold">${cumPct}% by Sun (${remH.toFixed(1)}h left)</span>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-2 border border-slate-800 overflow-hidden flex">
+              <div class="bg-blue-500 h-full progress-fill" style="width: ${wdBarPct}%" title="Weekday Planned"></div>
+              <div class="bg-emerald-400 h-full progress-fill" style="width: ${weBarPct}%" title="Weekend Planned"></div>
+            </div>
+          `;
+          forecastListEl.appendChild(item);
+        });
+      }
+
+      // 2. Render Proposed New Master Timers
+      const timersListEl = document.getElementById('aiProposedMasterTimersList');
+      const timersCountEl = document.getElementById('aiMasterTimersCount');
+      timersListEl.innerHTML = '';
+      const newTimers = proposal.newMasterGoalTimers || [];
+      timersCountEl.textContent = `${newTimers.length} New Timer${newTimers.length === 1 ? '' : 's'}`;
+      if (newTimers.length === 0) {
+        timersListEl.innerHTML = `<div class="text-[10px] text-slate-500 italic bg-slate-950/50 p-2 rounded-xl border border-slate-800/50">Using your existing active Master Task Timers.</div>`;
+      } else {
+        newTimers.forEach(nt => {
+          const row = document.createElement('div');
+          row.className = "flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/80 border border-emerald-500/30";
+          row.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                <i class="fa-solid fa-stopwatch text-xs"></i>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs font-bold text-slate-100 truncate">${nt.text}</span>
+                <span class="text-[9px] text-slate-400 truncate">${nt.reason || 'Auto-synced across Weekly, Daily & Hourly'}</span>
+              </div>
+            </div>
+            <span class="text-xs font-mono font-black text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded-lg border border-emerald-500/30 flex-shrink-0">${Number(nt.expectedHours || 1).toFixed(1)}h</span>
+          `;
+          timersListEl.appendChild(row);
+        });
+      }
+
+      // 3. Render 7-Day Weekly Schedule Distribution
+      const weeklyListEl = document.getElementById('aiProposedWeeklyList');
+      const weeklyCountEl = document.getElementById('aiWeeklyTasksCount');
+      weeklyListEl.innerHTML = '';
+      const weeklyItems = proposal.weeklySchedule || [];
+      weeklyCountEl.textContent = `${weeklyItems.length} Weekly Block${weeklyItems.length === 1 ? '' : 's'}`;
+
+      if (weeklyItems.length === 0) {
+        weeklyListEl.innerHTML = `<div class="text-[10px] text-slate-500 italic">No weekly items generated.</div>`;
+      } else {
+        orderedWeekDays.forEach(dayName => {
+          const dayTasks = weeklyItems.filter(w => (w.day || '').toLowerCase().startsWith(dayName.toLowerCase()));
+          if (dayTasks.length === 0) return;
+          const isWeekend = (dayName === 'Sat' || dayName === 'Sun');
+          const dayTotalHrs = dayTasks.reduce((acc, cur) => acc + (Number(cur.allocatedHours) || 0), 0);
+
+          const dayGroup = document.createElement('div');
+          dayGroup.className = `p-2.5 rounded-xl border ${isWeekend ? 'bg-emerald-950/15 border-emerald-500/30' : 'bg-slate-900/70 border-slate-800'} flex flex-col gap-1.5`;
+          
+          let tasksHtml = '';
+          dayTasks.forEach(dt => {
+            const prioColor = dt.priority === 'high' ? 'text-red-400' : (dt.priority === 'low' ? 'text-slate-400' : 'text-blue-400');
+            tasksHtml += `
+              <div class="flex items-center justify-between gap-2 bg-slate-950/70 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
+                <div class="flex flex-col min-w-0 flex-1">
+                  <span class="text-[11px] font-semibold text-slate-200 truncate">${dt.taskText}</span>
+                  <div class="flex items-center gap-2 text-[9px] text-slate-400">
+                    <span class="uppercase font-bold ${prioColor}">${dt.priority || 'medium'}</span>
+                    ${dt.timeWindow ? `<span>• <i class="fa-regular fa-clock mr-0.5"></i>${dt.timeWindow}</span>` : ''}
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono font-bold ${isWeekend ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-purple-300 bg-purple-500/10 border-purple-500/20'} px-1.5 py-0.5 rounded border flex-shrink-0">${Number(dt.allocatedHours || 1).toFixed(1)}h</span>
+              </div>
+            `;
+          });
+
+          dayGroup.innerHTML = `
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-black uppercase tracking-wider ${isWeekend ? 'text-emerald-400' : 'text-purple-400'}">
+                ${dayName} ${isWeekend ? '🌟 (Weekend)' : ''}
+              </span>
+              <span class="text-[9px] font-mono font-bold text-slate-400">${dayTotalHrs.toFixed(1)}h planned</span>
+            </div>
+            <div class="flex flex-col gap-1">${tasksHtml}</div>
+          `;
+          weeklyListEl.appendChild(dayGroup);
+        });
+      }
+
+      // 4. Render Today's Hourly Schedule
+      const listEl = document.getElementById('aiProposedHoursList');
+      const hourlyCountEl = document.getElementById('aiHourlyTasksCount');
+      listEl.innerHTML = '';
       const sortedHours = [...(proposal.hourlySchedule || [])].sort((a, b) => a.hour - b.hour);
+      hourlyCountEl.textContent = `${sortedHours.length} Hour Slot${sortedHours.length === 1 ? '' : 's'}`;
+
       sortedHours.forEach(item => {
         if (item.hour < 6 || item.hour > 23) return;
         const displayTime = item.hour > 12 ? `${item.hour - 12} PM` : (item.hour === 12 ? `12 PM` : `${item.hour} AM`);
         let badge = `<span class="text-[8px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 uppercase font-bold">${item.sourceType || 'task'}</span>`;
-        if (item.sourceType === 'goal') badge = `<span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase font-bold">Timer Sync</span>`;
+        if (item.sourceType === 'goal' || item.linkedGoalRef) badge = `<span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase font-bold">Timer Sync</span>`;
         else if (item.sourceType === 'daily') badge = `<span class="text-[8px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase font-bold">Daily Task</span>`;
 
         const row = document.createElement('div');
@@ -1111,75 +1471,149 @@ Rules:
       });
     }
 
+    function resolveGoalId(ref, textFallback, tempKeyMap) {
+      if (ref) {
+        if (tempKeyMap[ref]) return tempKeyMap[ref];
+        const exactGoal = state.goalTasks.find(g => g.id === ref && !g.completed);
+        if (exactGoal) return exactGoal.id;
+      }
+      if (textFallback) {
+        const lower = textFallback.toLowerCase();
+        const matched = state.goalTasks.find(g => !g.completed && (lower.includes(g.text.toLowerCase()) || g.text.toLowerCase().includes(lower)));
+        if (matched) return matched.id;
+      }
+      return null;
+    }
+
     function applyLastAiProposal(silentToast = false) {
       if (!lastAiProposal) return;
 
-      let appliedHours = 0;
-      const schedule = lastAiProposal.hourlySchedule || [];
-      schedule.forEach(item => {
-        const h = parseInt(item.hour, 10);
-        if (isNaN(h) || h < 6 || h > 23) return;
-        const existing = state.planner.hours[h];
-        if (existing && existing.locked) return; // Don't overwrite locked past hours
+      const applyGoals = document.getElementById('scopeApplyGoals')?.checked !== false;
+      const applyWeekly = document.getElementById('scopeApplyWeekly')?.checked !== false;
+      const applyDailyHourly = document.getElementById('scopeApplyDailyHourly')?.checked !== false;
 
-        let goalId = null;
-        let dailyId = null;
+      const tempKeyMap = {};
+      let createdTimersCount = 0;
+      let appliedWeeklyCount = 0;
+      let appliedHoursCount = 0;
 
-        if (item.sourceType === 'goal' && item.linkedId) {
-          const foundGoal = state.goalTasks.find(g => g.id === item.linkedId && !g.completed);
-          if (foundGoal) goalId = foundGoal.id;
-        } else if (item.sourceType === 'daily' && item.linkedId) {
-          const foundDaily = state.tasks.find(t => t.id === item.linkedId && !t.completed);
-          if (foundDaily) {
-            dailyId = foundDaily.id;
-            goalId = foundDaily.goalId || null;
-          }
-        } else {
-          // Fuzzy match by title if linkedId wasn't exact
-          const matchGoal = state.goalTasks.find(g => !g.completed && item.taskText.toLowerCase().includes(g.text.toLowerCase()));
-          if (matchGoal) goalId = matchGoal.id;
-          const matchDaily = state.tasks.find(t => !t.completed && item.taskText.toLowerCase().includes(t.text.toLowerCase()));
-          if (matchDaily) {
-            dailyId = matchDaily.id;
-            if (!goalId) goalId = matchDaily.goalId || null;
-          }
-        }
-
-        state.planner.hours[h] = {
-          text: item.taskText,
-          goalId: goalId,
-          dailyId: dailyId,
-          productiveMs: existing ? (existing.productiveMs || 0) : 0,
-          locked: false
-        };
-        appliedHours++;
-      });
-
-      // Add any new suggested daily tasks if not already present
-      const newDailies = lastAiProposal.newDailyTasks || [];
-      newDailies.forEach(nt => {
+      // 1. Create or map Master Task Timers
+      const newTimers = lastAiProposal.newMasterGoalTimers || [];
+      newTimers.forEach(nt => {
         if (!nt.text) return;
-        const exists = state.tasks.some(t => !t.completed && t.text.toLowerCase() === nt.text.toLowerCase());
-        if (!exists) {
-          const prio = ['low', 'medium', 'high'].includes((nt.priority || '').toLowerCase()) ? nt.priority.toLowerCase() : 'medium';
-          state.tasks.unshift({
-            id: crypto.randomUUID(),
-            text: nt.text,
-            priority: prio,
-            goalId: null,
+        const existing = state.goalTasks.find(g => !g.completed && g.text.toLowerCase() === nt.text.toLowerCase());
+        if (existing) {
+          if (nt.tempKey) tempKeyMap[nt.tempKey] = existing.id;
+        } else if (applyGoals) {
+          const hrs = Math.max(0.5, parseFloat(nt.expectedHours) || 2);
+          const expectedMs = Math.round(hrs * 3600000);
+          const newId = crypto.randomUUID();
+          state.goalTasks.unshift({
+            id: newId,
+            text: nt.text.trim(),
+            expectedMs: expectedMs,
+            remainingMs: expectedMs,
+            spentMs: 0,
             completed: false,
             createdAt: new Date().toISOString()
           });
+          if (nt.tempKey) tempKeyMap[nt.tempKey] = newId;
+          createdTimersCount++;
         }
       });
 
+      // 2. Apply 7-Day Weekly Schedule Distribution
+      if (applyWeekly && Array.isArray(lastAiProposal.weeklySchedule)) {
+        lastAiProposal.weeklySchedule.forEach(item => {
+          const matchedDay = dayNamesList.find(d => (item.day || '').toLowerCase().startsWith(d.toLowerCase()));
+          if (!matchedDay || !item.taskText) return;
+          if (!Array.isArray(state.weeklyPlan[matchedDay])) state.weeklyPlan[matchedDay] = [];
+
+          const linkedGoalId = resolveGoalId(item.linkedGoalRef, item.taskText, tempKeyMap);
+          const prio = ['low', 'medium', 'high'].includes((item.priority || '').toLowerCase()) ? item.priority.toLowerCase() : 'medium';
+
+          // Avoid duplicate task on the same day with same timeWindow
+          const alreadyOnDay = state.weeklyPlan[matchedDay].some(
+            t => t.text.toLowerCase() === item.taskText.toLowerCase() && (t.timeWindow || '') === (item.timeWindow || '')
+          );
+          if (!alreadyOnDay) {
+            state.weeklyPlan[matchedDay].push({
+              id: crypto.randomUUID(),
+              text: item.taskText.trim(),
+              priority: prio,
+              goalId: linkedGoalId,
+              allocatedHours: Number(item.allocatedHours || 1),
+              timeWindow: item.timeWindow || "",
+              completed: false,
+              createdAt: new Date().toISOString()
+            });
+            appliedWeeklyCount++;
+          }
+        });
+      }
+
+      // 3. Apply Today's Daily Backlog & Hourly Schedule
+      if (applyDailyHourly) {
+        const newDailies = lastAiProposal.newDailyTasks || [];
+        newDailies.forEach(nt => {
+          if (!nt.text) return;
+          const exists = state.tasks.some(t => !t.completed && t.text.toLowerCase() === nt.text.toLowerCase());
+          if (!exists) {
+            const prio = ['low', 'medium', 'high'].includes((nt.priority || '').toLowerCase()) ? nt.priority.toLowerCase() : 'medium';
+            const linkedGoalId = resolveGoalId(nt.linkedGoalRef, nt.text, tempKeyMap);
+            state.tasks.unshift({
+              id: crypto.randomUUID(),
+              text: nt.text.trim(),
+              priority: prio,
+              goalId: linkedGoalId,
+              completed: false,
+              createdAt: new Date().toISOString()
+            });
+          }
+        });
+
+        const schedule = lastAiProposal.hourlySchedule || [];
+        schedule.forEach(item => {
+          const h = parseInt(item.hour, 10);
+          if (isNaN(h) || h < 6 || h > 23) return;
+          const existing = state.planner.hours[h];
+          if (existing && existing.locked) return;
+
+          let goalId = resolveGoalId(item.linkedGoalRef, item.taskText, tempKeyMap);
+          let dailyId = null;
+
+          const matchDaily = state.tasks.find(t => !t.completed && (
+            t.id === item.linkedGoalRef ||
+            item.taskText.toLowerCase().includes(t.text.toLowerCase()) ||
+            t.text.toLowerCase().includes(item.taskText.toLowerCase())
+          ));
+          if (matchDaily) {
+            dailyId = matchDaily.id;
+            if (!goalId && matchDaily.goalId) goalId = matchDaily.goalId;
+          }
+
+          state.planner.hours[h] = {
+            text: item.taskText,
+            goalId: goalId,
+            dailyId: dailyId,
+            productiveMs: existing ? (existing.productiveMs || 0) : 0,
+            locked: false
+          };
+          appliedHoursCount++;
+        });
+      }
+
+      lastProposalApplied = true;
       saveState();
+      populateGoalDropdowns();
+      renderGoalTasks();
       renderTasks();
+      renderWeeklyView();
       updateDashboard();
       renderAiView();
       playSynthSound('congrats');
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-      showFeedbackToast(`AI scheduled ${appliedHours} hour slots into your Hourly Planner!`, "success");
+      confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
+      showFeedbackToast(`Synced ${createdTimersCount} Master Timers, ${appliedWeeklyCount} Weekly blocks & ${appliedHoursCount} Hourly slots!`, "success");
     }
 
     // Deducts elapsed ms from Master Goal Task's remainingMs
@@ -1201,7 +1635,7 @@ Rules:
         playSynthSound('reward');
         confetti({ particleCount: 180, spread: 100, origin: { y: 0.5 } });
         saveState();
-        setTimeout(checkDailyRewardUnlock, 400); // Trigger reward when master goal finished!
+        setTimeout(checkDailyRewardUnlock, 400);
         return true; 
       }
       return false;
@@ -1309,7 +1743,7 @@ Rules:
       document.getElementById('activeGoalsCount').textContent = `${activeGoals.length} Active`;
 
       if (activeGoals.length === 0) {
-        activeContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 italic">No active task timers. Create one above!</div>`;
+        activeContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 italic">No active task timers. Create one above or via AI Plan!</div>`;
       } else {
         activeGoals.forEach(g => {
           ensureGoalProps(g);
@@ -1673,7 +2107,6 @@ Rules:
         const taskId = t.activeTaskId;
         const activeTask = state.tasks.find(x => x.id === taskId);
         
-        // Sync time continuously
         const goalFinished = syncTimeSpent({ goalId: activeTask ? activeTask.goalId : null, deltaMs: delta });
 
         if (goalFinished) {
@@ -1838,10 +2271,17 @@ Rules:
 
       dayNamesList.forEach(d => {
         const isSelected = d === selectedWeeklyDay; const isRealToday = d === realTodayStr;
+        const count = (state.weeklyPlan[d] || []).length;
         const btn = document.createElement('button');
         btn.onclick = () => { selectedWeeklyDay = d; playSynthSound('click'); renderWeeklyView(); };
-        btn.className = `day-btn snap-center flex flex-col items-center justify-center min-w-[50px] py-2 rounded-xl border transition ${isSelected ? 'active font-bold' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'}`;
-        btn.innerHTML = `<span class="text-xs uppercase">${d}</span>${isRealToday ? '<span class="text-[8px] mt-0.5 bg-blue-500 text-white px-1 rounded-sm leading-tight">TODAY</span>' : ''}`;
+        btn.className = `day-btn snap-center flex flex-col items-center justify-center min-w-[52px] py-2 rounded-xl border transition ${isSelected ? 'active font-bold' : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'}`;
+        btn.innerHTML = `
+          <span class="text-xs uppercase">${d}</span>
+          <div class="flex items-center gap-1 mt-0.5">
+            ${isRealToday ? '<span class="text-[7px] bg-blue-500 text-white px-1 rounded-sm leading-tight">NOW</span>' : ''}
+            ${count > 0 ? `<span class="text-[8px] font-mono bg-purple-500/20 text-purple-300 px-1 rounded">${count}</span>` : ''}
+          </div>
+        `;
         dayContainer.appendChild(btn);
       });
 
@@ -1849,19 +2289,20 @@ Rules:
       const list = state.weeklyPlan[selectedWeeklyDay] || [];
       
       if (list.length === 0) {
-        tasksContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 italic">No tasks planned for ${selectedWeeklyDay}.</div>`;
+        tasksContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 italic">No tasks planned for ${selectedWeeklyDay}. Use + above or AI Plan to distribute your week!</div>`;
       } else {
         list.forEach(t => {
           let prioColor = t.priority === 'high' ? 'text-red-400' : (t.priority === 'low' ? 'text-slate-400' : 'text-blue-400');
           const linkedGoal = t.goalId ? state.goalTasks.find(g => g.id === t.goalId) : null;
-          const goalBadge = linkedGoal ? `<span class="text-[9px] font-mono bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30"><i class="fa-solid fa-stopwatch mr-1"></i>${formatDurationBadge(linkedGoal.remainingMs)}</span>` : `<span class="text-[9px] text-slate-500">Daily Task</span>`;
-          
+          const goalBadge = linkedGoal ? `<span class="text-[9px] font-mono bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30"><i class="fa-solid fa-stopwatch mr-1"></i>${formatDurationBadge(linkedGoal.remainingMs)} left</span>` : `<span class="text-[9px] text-slate-500">Weekly Task</span>`;
+          const timeBadge = (t.timeWindow || t.allocatedHours) ? `<span class="text-[9px] font-mono bg-purple-500/15 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30"><i class="fa-regular fa-clock mr-1"></i>${t.timeWindow ? t.timeWindow : ''}${t.allocatedHours ? ` (${t.allocatedHours}h)` : ''}</span>` : '';
+
           const row = document.createElement('div');
           row.className = "flex justify-between items-center bg-slate-900/50 p-2.5 rounded-xl border border-slate-800 gap-2";
           row.innerHTML = `
             <div class="flex flex-col min-w-0 flex-1">
               <span class="text-xs text-slate-200 truncate font-medium">${t.text}</span>
-              <div class="flex items-center gap-2 mt-1 flex-wrap"><span class="text-[9px] uppercase ${prioColor} font-bold">${t.priority}</span>${goalBadge}</div>
+              <div class="flex items-center gap-1.5 mt-1 flex-wrap"><span class="text-[9px] uppercase ${prioColor} font-bold">${t.priority}</span>${timeBadge}${goalBadge}</div>
             </div>
             <div class="flex items-center gap-1.5 flex-shrink-0">
               <button onclick="pushWeeklyTaskToToday('${t.id}')" title="Move to Today's Active Backlog" class="text-[10px] bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 border border-blue-500/30"><i class="fa-solid fa-bolt"></i> Today</button>
@@ -1894,11 +2335,24 @@ Rules:
     function handleAddWeeklyTask(e) {
       e.preventDefault();
       const input = document.getElementById('weeklyTaskInput');
+      const slotInput = document.getElementById('weeklyTaskSlotInput');
       const goalSel = document.getElementById('weeklyGoalSelect');
-      const text = input.value.trim(); const goalId = goalSel && goalSel.value ? goalSel.value : null;
+      const text = input.value.trim();
+      const timeWindow = slotInput ? slotInput.value.trim() : "";
+      const goalId = goalSel && goalSel.value ? goalSel.value : null;
       if (!text) return;
-      state.weeklyPlan[selectedWeeklyDay].push({ id: crypto.randomUUID(), text, priority: 'medium', goalId: goalId, completed: false, createdAt: new Date().toISOString() });
-      input.value = ''; if(goalSel) goalSel.value = ''; playSynthSound('complete'); saveState(); renderWeeklyView();
+      state.weeklyPlan[selectedWeeklyDay].push({
+        id: crypto.randomUUID(),
+        text,
+        priority: 'medium',
+        goalId: goalId,
+        timeWindow: timeWindow,
+        allocatedHours: 1,
+        completed: false,
+        createdAt: new Date().toISOString()
+      });
+      input.value = ''; if (slotInput) slotInput.value = ''; if(goalSel) goalSel.value = '';
+      playSynthSound('complete'); saveState(); renderWeeklyView();
     }
 
     function pushWeeklyTaskToToday(id) {
