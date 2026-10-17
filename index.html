@@ -101,6 +101,12 @@
       border-color: #3b82f6;
       color: #60a5fa;
     }
+
+    .mode-pill.active {
+      background: rgba(217, 70, 239, 0.2);
+      border-color: #d946ef;
+      color: #f0abfc;
+    }
   </style>
 </head>
 <body class="flex justify-center items-start overflow-y-auto w-full">
@@ -200,9 +206,14 @@
       </div>
 
       <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
-        <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2 mb-1">
-          <i class="fa-solid fa-list-check text-blue-400"></i> Active Daily Backlog
-        </h2>
+        <div class="flex justify-between items-center mb-1">
+          <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-blue-400"></i> Active Daily Backlog
+          </h2>
+          <button onclick="switchTab('ai')" class="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 font-bold flex items-center gap-1">
+            <i class="fa-solid fa-rotate"></i> AI Reschedule
+          </button>
+        </div>
         <div id="taskList" class="max-h-72 overflow-y-auto flex flex-col gap-2.5 pr-1 min-h-[10px]"></div>
       </div>
 
@@ -254,7 +265,7 @@
           <span class="text-[10px] bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded font-bold border border-emerald-500/30">Auto-Syncs</span>
         </div>
         <p class="text-[10px] text-slate-400 leading-snug">
-          Create long-term multi-hour tasks here, or let <strong>AI Plan</strong> generate them and distribute them across your week! Time spent in Daily, Hourly, or Weekly tasks syncs back here automatically.
+          Create long-term multi-hour tasks here, or let <strong>AI Plan</strong> create, reschedule, or delete them! Time spent in Daily, Hourly, or Weekly tasks syncs back here automatically.
         </p>
 
         <form onsubmit="handleAddGoalTask(event)" class="flex flex-col gap-2.5 mt-1">
@@ -328,16 +339,21 @@
       <div class="glass-card rounded-2xl p-3 border border-fuchsia-500/30 bg-gradient-to-r from-fuchsia-950/30 via-slate-900/60 to-blue-950/30 flex items-center justify-between gap-2">
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-8 h-8 rounded-xl bg-fuchsia-500/20 border border-fuchsia-500/40 flex items-center justify-center text-fuchsia-400 flex-shrink-0">
-            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+            <i class="fa-solid fa-rotate text-xs"></i>
           </div>
           <div class="flex flex-col min-w-0">
-            <span class="text-xs font-bold text-slate-100 truncate">Want AI to plan your Day, Week & Timers?</span>
-            <span class="text-[10px] text-slate-400 truncate">Auto-schedule available hours & see Weekend % forecast</span>
+            <span class="text-xs font-bold text-slate-100 truncate">Availability changed today?</span>
+            <span class="text-[10px] text-slate-400 truncate">Let AI reschedule, replace, or clear your hourly slots</span>
           </div>
         </div>
-        <button onclick="switchTab('ai')" class="px-3 py-1.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-[10px] font-bold transition flex-shrink-0 shadow-md shadow-fuchsia-500/20">
-          AI Plan <i class="fa-solid fa-arrow-right ml-1"></i>
-        </button>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button onclick="clearUnlockedHourlySlots()" title="Clear all unlocked hourly slots" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-red-950/60 text-slate-300 hover:text-red-300 border border-slate-700 text-[10px] font-bold transition">
+            <i class="fa-solid fa-broom"></i>
+          </button>
+          <button onclick="switchTab('ai')" class="px-3 py-1.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-[10px] font-bold transition shadow-md shadow-fuchsia-500/20">
+            AI Reschedule <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        </div>
       </div>
 
       <div class="glass-card rounded-2xl p-3 flex flex-col gap-2 relative" id="hourlyListContainer"></div>
@@ -352,9 +368,14 @@
           <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-purple-400"></i> Weekly Schedule
           </h2>
-          <button onclick="switchTab('ai')" class="text-[10px] bg-fuchsia-600/20 hover:bg-fuchsia-600/40 text-fuchsia-300 border border-fuchsia-500/30 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1">
-            <i class="fa-solid fa-robot"></i> AI Distribute Week
-          </button>
+          <div class="flex items-center gap-1.5">
+            <button onclick="clearWeeklyDayOrAll(false)" title="Clear selected day" class="text-[10px] bg-slate-800 hover:bg-red-950/60 text-slate-300 hover:text-red-300 border border-slate-700 px-2 py-1 rounded-lg font-bold transition">
+              <i class="fa-solid fa-trash-can mr-1"></i>Day
+            </button>
+            <button onclick="switchTab('ai')" class="text-[10px] bg-fuchsia-600/20 hover:bg-fuchsia-600/40 text-fuchsia-300 border border-fuchsia-500/30 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1">
+              <i class="fa-solid fa-robot"></i> AI Reschedule Week
+            </button>
+          </div>
         </div>
         <p class="text-[10px] text-slate-400 mb-1 leading-snug">Tasks auto-inject into Today's Backlog on their scheduled day! Linked Master Timers sync automatically.</p>
         
@@ -447,58 +468,91 @@
         </div>
 
         <p class="text-[10px] text-slate-400 leading-snug">
-          Tell AI your <strong>available time windows</strong> and the <strong>tasks/projects</strong> you need to do. AI will create <strong>Master Task Timers</strong>, distribute tasks across your <strong>7-Day Weekly Schedule</strong>, fill today's <strong>Daily & Hourly slots</strong>, and calculate your <strong>Weekend Completion Forecast (Hours & %)</strong>!
+          AI can <strong>create, reschedule, replace, or delete</strong> your current <strong>Master Timers</strong>, <strong>7-Day Weekly Plan</strong>, <strong>Daily Backlog</strong>, and <strong>Hourly Schedule</strong> based on changes to your <strong>available time slots</strong>—and forecast your <strong>Weekend Completion %</strong>!
         </p>
 
         <!-- Structured Availability Helper -->
         <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3 flex flex-col gap-2.5">
           <div class="flex justify-between items-center">
             <span class="text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 flex items-center gap-1.5">
-              <i class="fa-regular fa-clock"></i> Your Daily & Weekend Availability
+              <i class="fa-regular fa-clock"></i> Your Availability Time Slots
             </span>
-            <span class="text-[9px] text-slate-500">Auto-included in AI plan</span>
+            <span class="text-[9px] text-emerald-400 font-semibold">AI can also update these!</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div class="flex flex-col gap-1">
-              <label class="text-[9px] text-slate-400 font-semibold">Mon–Fri Available Times</label>
+              <label class="text-[9px] text-slate-400 font-semibold">Mon–Fri Available Slots</label>
               <input type="text" id="aiWeekdayAvailInput" value="6:00 PM - 9:00 PM (3h/day)" onchange="saveAvailabilityPrefs()"
                      placeholder="e.g. 6 PM - 9 PM (3h)"
                      class="glass-input px-2.5 py-1.5 rounded-lg text-[11px] text-slate-200 focus:outline-none">
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-[9px] text-emerald-400 font-semibold">Sat–Sun (Weekend) Times</label>
+              <label class="text-[9px] text-emerald-400 font-semibold">Sat–Sun (Weekend) Slots</label>
               <input type="text" id="aiWeekendAvailInput" value="10:00 AM - 4:00 PM (6h/day)" onchange="saveAvailabilityPrefs()"
                      placeholder="e.g. 10 AM - 4 PM (6h)"
                      class="glass-input px-2.5 py-1.5 rounded-lg text-[11px] text-emerald-300 focus:outline-none">
             </div>
           </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[9px] text-blue-400 font-semibold">Today's Specific Available Slot Override (Optional)</label>
+            <input type="text" id="aiTodayAvailInput" value="" onchange="saveAvailabilityPrefs()"
+                   placeholder="e.g. Only free 8:00 PM - 11:00 PM today (leave blank to use default)"
+                   class="glass-input px-2.5 py-1.5 rounded-lg text-[11px] text-blue-200 placeholder-slate-500 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- AI Plan Action Mode Selector -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-2.5 flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-sliders text-fuchsia-400"></i> Schedule Action Mode
+            </span>
+            <span id="aiModeHintTxt" class="text-[9px] text-fuchsia-300 font-medium">AI decides what to add/move/delete</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+            <button type="button" onclick="setAiOperationMode('smart')" id="modeBtn-smart" class="mode-pill active text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition flex items-center justify-center gap-1">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Smart Auto
+            </button>
+            <button type="button" onclick="setAiOperationMode('reschedule')" id="modeBtn-reschedule" class="mode-pill text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition flex items-center justify-center gap-1">
+              <i class="fa-solid fa-clock-rotate-left"></i> Reschedule
+            </button>
+            <button type="button" onclick="setAiOperationMode('replace')" id="modeBtn-replace" class="mode-pill text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition flex items-center justify-center gap-1">
+              <i class="fa-solid fa-arrows-rotate"></i> Replace Plan
+            </button>
+            <button type="button" onclick="setAiOperationMode('merge')" id="modeBtn-merge" class="mode-pill text-[10px] font-bold py-1.5 px-2 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 transition flex items-center justify-center gap-1">
+              <i class="fa-solid fa-plus-circle"></i> Merge Only
+            </button>
+          </div>
         </div>
 
         <!-- Quick Prompt Chips -->
         <div class="flex flex-wrap gap-1.5">
-          <button type="button" onclick="setAiQuickPrompt('I need to complete: 1) Build Portfolio App (15 hours), 2) Study Data Structures (10 hours), and 3) Fitness & Reading (5 hours). Create Master Timers for these, distribute them across my entire week (Mon-Sun) and today hourly schedule using my available times, and tell me how many hours and what % of each task I can finish this weekend.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border border-fuchsia-500/30 px-2.5 py-1 rounded-lg transition">
-            🚀 Create Master Timers + Full Week Plan
+          <button type="button" onclick="useQuickAiPreset('reschedule_slots')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg transition">
+            🔄 Reschedule to New Time Slots
           </button>
-          <button type="button" onclick="setAiQuickPrompt('Distribute all my existing Master Task Timers and pending Daily tasks across the entire week (Mon-Sun) and today hourly slots based on my weekday and weekend availability. Show how much % and hours I will complete by the end of the weekend.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg transition">
-            📅 Distribute My Tasks Across Week
+          <button type="button" onclick="useQuickAiPreset('replace_all')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg transition">
+            ♻️ Replace Current Week & Hourly Plan
           </button>
-          <button type="button" onclick="setAiQuickPrompt('Weekend Sprint Mode: Plan an intensive Saturday & Sunday schedule alongside my weekday hours. Calculate the exact hours and percentage of each Master Task I will conquer over the weekend!')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg transition">
-            📊 Weekend % Forecast
+          <button type="button" onclick="useQuickAiPreset('delete_cleanup')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-red-300 border border-red-500/30 px-2.5 py-1 rounded-lg transition">
+            🗑️ Delete Low-Priority / Shift to Weekend
           </button>
-          <button type="button" onclick="setAiQuickPrompt('I am free from 10 AM to 6 PM today with lunch at 1 PM. Schedule my tasks for today and distribute the remaining work across the rest of the week.')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-lg transition">
-            ⚡ Today + Rest of Week
+          <button type="button" onclick="useQuickAiPreset('full_create')" class="text-[10px] bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border border-fuchsia-500/30 px-2.5 py-1 rounded-lg transition">
+            🚀 Create Master Timers + Full Week
           </button>
         </div>
 
         <div class="flex flex-col gap-2">
-          <textarea id="aiPromptInput" rows="4" placeholder="Describe your tasks, total hours needed, and your available times in a day (e.g., 'I have 2 hours on weekdays 7-9 PM and 5 hours on Sat & Sun 10 AM-3 PM. I need to finish: UI Redesign (12h), Backend API (8h), and Exam Prep (6h)...')"
+          <textarea id="aiPromptInput" rows="4" placeholder="Tell AI what to create, reschedule, replace, or delete! E.g.:
+• 'My availability changed to 8 PM - 11 PM on weekdays and 2 PM - 8 PM on weekends. Reschedule my entire current plan to fit these slots.'
+• 'Delete my tasks on Wednesday, move them to Saturday, and clear my afternoon hours today.'
+• 'Replace my current plan with 2 new Master Timers: React App (14h) and System Design (10h).'"
                     class="glass-input w-full p-3 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none resize-none"></textarea>
 
           <!-- Granular Sync Scopes -->
           <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 flex flex-col gap-2">
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-bold text-slate-300 flex items-center gap-1.5">
-                <i class="fa-solid fa-layer-group text-fuchsia-400"></i> Auto-Apply Generated Plans To:
+                <i class="fa-solid fa-layer-group text-fuchsia-400"></i> Apply AI Changes To:
               </span>
               <label class="flex items-center gap-1 text-[10px] text-fuchsia-300 font-semibold cursor-pointer">
                 <input type="checkbox" id="aiAutoApplyToggle" checked class="accent-fuchsia-500 w-3.5 h-3.5 rounded">
@@ -523,8 +577,29 @@
 
           <button type="button" onclick="generateAiSchedule()" id="aiGenerateBtn" class="glow-btn w-full py-3.5 px-4 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-fuchsia-500/20 flex items-center justify-center gap-2 text-xs active:scale-95 transition">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>GENERATE MASTER TIMERS, WEEKLY & HOURLY PLAN</span>
+            <span>ANALYZE, RESCHEDULE & UPDATE MY PLAN</span>
           </button>
+        </div>
+
+        <!-- Direct Quick-Reset / Clear Plan Controls -->
+        <div class="border-t border-slate-800/80 pt-2.5 mt-1 flex flex-col gap-1.5">
+          <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+            <i class="fa-solid fa-broom text-rose-400"></i> Instant Manual Plan Reset Controls
+          </span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+            <button type="button" onclick="clearUnlockedHourlySlots()" class="text-[9px] bg-slate-950 hover:bg-red-950/50 text-slate-300 hover:text-red-300 border border-slate-800 hover:border-red-500/30 py-1.5 px-2 rounded-lg font-semibold transition">
+              Clear Hourly Today
+            </button>
+            <button type="button" onclick="clearWeeklyDayOrAll(true)" class="text-[9px] bg-slate-950 hover:bg-red-950/50 text-slate-300 hover:text-red-300 border border-slate-800 hover:border-red-500/30 py-1.5 px-2 rounded-lg font-semibold transition">
+              Clear Full Week
+            </button>
+            <button type="button" onclick="clearPendingDailyTasks()" class="text-[9px] bg-slate-950 hover:bg-red-950/50 text-slate-300 hover:text-red-300 border border-slate-800 hover:border-red-500/30 py-1.5 px-2 rounded-lg font-semibold transition">
+              Clear Daily Pending
+            </button>
+            <button type="button" onclick="clearAllActiveMasterTimers()" class="text-[9px] bg-slate-950 hover:bg-red-950/50 text-slate-300 hover:text-red-300 border border-slate-800 hover:border-red-500/30 py-1.5 px-2 rounded-lg font-semibold transition">
+              Clear Master Timers
+            </button>
+          </div>
         </div>
       </div>
 
@@ -532,15 +607,26 @@
       <div id="aiResultCard" class="glass-card rounded-2xl p-4 hidden flex-col gap-4 border border-emerald-500/30">
         <div class="flex justify-between items-center">
           <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-sparkles"></i> AI Master Plan & Weekend Forecast
+            <i class="fa-solid fa-sparkles"></i> AI Master Plan & Reschedule Summary
           </h3>
           <button type="button" onclick="applyLastAiProposal(false)" id="aiManualApplyBtn" class="text-[10px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-2.5 py-1 rounded-lg transition shadow-md">
-            <i class="fa-solid fa-check-double mr-1"></i> Apply All Now
+            <i class="fa-solid fa-check-double mr-1"></i> Apply Plan Now
           </button>
         </div>
 
         <!-- Strategy Summary -->
         <p id="aiAnalysisText" class="text-xs text-slate-300 bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 leading-relaxed"></p>
+
+        <!-- SECTION 0: RESCHEDULE, REPLACEMENT & DELETION LOG -->
+        <div id="aiMutationsSection" class="hidden flex-col gap-2 bg-amber-950/20 border border-amber-500/30 p-3 rounded-xl">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate"></i> Plan Modifications, Deletions & Slot Updates
+            </span>
+            <span id="aiMutationsBadge" class="text-[9px] font-mono bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">Modified</span>
+          </div>
+          <div id="aiMutationsList" class="flex flex-col gap-1 text-[10px] text-slate-200"></div>
+        </div>
 
         <!-- SECTION 1: WEEKEND & WEEKLY COMPLETION FORECAST -->
         <div id="aiForecastSection" class="flex flex-col gap-2.5 bg-gradient-to-br from-emerald-950/30 via-slate-950/80 to-fuchsia-950/30 p-3.5 rounded-2xl border border-emerald-500/30">
@@ -572,11 +658,11 @@
           <div id="aiTaskForecastList" class="flex flex-col gap-2 mt-1"></div>
         </div>
 
-        <!-- SECTION 2: NEW / LINKED MASTER TASK TIMERS -->
+        <!-- SECTION 2: NEW / UPDATED MASTER TASK TIMERS -->
         <div id="aiMasterTimersSection" class="flex flex-col gap-2">
           <div class="flex justify-between items-center">
             <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-stopwatch"></i> Master Task Timers Created / Linked
+              <i class="fa-solid fa-stopwatch"></i> Master Task Timers (Created / Updated)
             </span>
             <span id="aiMasterTimersCount" class="text-[9px] text-slate-400 font-mono">0 Timers</span>
           </div>
@@ -758,7 +844,9 @@
       aiConfig: {
         userApiKey: "",
         weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)",
-        weekendAvailability: "10:00 AM - 4:00 PM (6h/day)"
+        weekendAvailability: "10:00 AM - 4:00 PM (6h/day)",
+        todayAvailabilityOverride: "",
+        operationMode: "smart" // 'smart' | 'reschedule' | 'replace' | 'merge'
       }
     };
 
@@ -821,9 +909,11 @@
           if (!state.rewards) state.rewards = [];
           if (!state.goalTasks) state.goalTasks = [];
           if (!state.activeGoalTimer) state.activeGoalTimer = { goalId: null, isRunning: false, lastTickMs: null };
-          if (!state.aiConfig) state.aiConfig = { userApiKey: "", weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)", weekendAvailability: "10:00 AM - 4:00 PM (6h/day)" };
+          if (!state.aiConfig) state.aiConfig = { userApiKey: "", weekdayAvailability: "6:00 PM - 9:00 PM (3h/day)", weekendAvailability: "10:00 AM - 4:00 PM (6h/day)", todayAvailabilityOverride: "", operationMode: "smart" };
           if (!state.aiConfig.weekdayAvailability) state.aiConfig.weekdayAvailability = "6:00 PM - 9:00 PM (3h/day)";
           if (!state.aiConfig.weekendAvailability) state.aiConfig.weekendAvailability = "10:00 AM - 4:00 PM (6h/day)";
+          if (typeof state.aiConfig.todayAvailabilityOverride !== 'string') state.aiConfig.todayAvailabilityOverride = "";
+          if (!state.aiConfig.operationMode) state.aiConfig.operationMode = "smart";
 
           state.goalTasks = state.goalTasks.map(ensureGoalProps);
 
@@ -970,9 +1060,128 @@
     function saveAvailabilityPrefs() {
       const wd = document.getElementById('aiWeekdayAvailInput');
       const we = document.getElementById('aiWeekendAvailInput');
+      const td = document.getElementById('aiTodayAvailInput');
       if (wd) state.aiConfig.weekdayAvailability = wd.value.trim();
       if (we) state.aiConfig.weekendAvailability = we.value.trim();
+      if (td) state.aiConfig.todayAvailabilityOverride = td.value.trim();
       saveState();
+    }
+
+    function setAiOperationMode(mode) {
+      state.aiConfig.operationMode = mode;
+      saveState();
+      playSynthSound('click');
+      updateAiOperationModeUI();
+    }
+
+    function updateAiOperationModeUI() {
+      const mode = state.aiConfig.operationMode || 'smart';
+      const modes = ['smart', 'reschedule', 'replace', 'merge'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`modeBtn-${m}`);
+        if (!btn) return;
+        if (m === mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      const hintEl = document.getElementById('aiModeHintTxt');
+      if (hintEl) {
+        if (mode === 'smart') hintEl.textContent = "AI auto-detects what to create, reschedule, replace, or delete";
+        else if (mode === 'reschedule') hintEl.textContent = "Moves current tasks into your new availability slots & clears old slots";
+        else if (mode === 'replace') hintEl.textContent = "Wipes unlocked Hourly & Weekly plans and replaces with a fresh schedule";
+        else if (mode === 'merge') hintEl.textContent = "Keeps all current plans intact and only fills empty slots";
+      }
+    }
+
+    function useQuickAiPreset(preset) {
+      const area = document.getElementById('aiPromptInput');
+      if (!area) return;
+      if (preset === 'reschedule_slots') {
+        setAiOperationMode('reschedule');
+        area.value = "My available time slots have changed! Please reschedule my current Hourly, Daily, and Weekly tasks so they strictly fit my updated Weekday, Weekend, and Today availability slots, and clear any tasks scheduled outside my available hours.";
+      } else if (preset === 'replace_all') {
+        setAiOperationMode('replace');
+        area.value = "Replace my entire current Weekly and Hourly schedule with a fresh, optimized plan built around my active Master Task Timers and my current availability slots. Show my updated Weekend completion %.";
+      } else if (preset === 'delete_cleanup') {
+        setAiOperationMode('smart');
+        area.value = "Delete any low-priority or redundant tasks from my current Daily and Weekly plan, clear busy afternoon hours today, and reschedule the remaining high-priority Master Timer work into my evening and Weekend slots.";
+      } else if (preset === 'full_create') {
+        setAiOperationMode('smart');
+        area.value = "I need to complete: 1) Build Portfolio App (15 hours), 2) Study Data Structures (10 hours), and 3) Fitness & Reading (5 hours). Create Master Timers for these, distribute them across my entire week (Mon-Sun) and today's hourly schedule using my available times, and tell me how many hours and what % of each task I can finish this weekend.";
+      }
+      playSynthSound('click');
+    }
+
+    // Manual Reset / Clear Helpers
+    function clearUnlockedHourlySlots() {
+      let cleared = 0;
+      for (let h = 6; h <= 23; h++) {
+        const slot = state.planner.hours[h];
+        if (slot && slot.text && !slot.locked) {
+          if (state.planner.activeTimer.hour === h) {
+            state.planner.activeTimer.isRunning = false;
+            state.planner.activeTimer.hour = null;
+          }
+          state.planner.hours[h] = { text: "", goalId: null, dailyId: null, productiveMs: 0, locked: false };
+          cleared++;
+        }
+      }
+      saveState();
+      renderPlanner();
+      renderAiView();
+      playSynthSound('click');
+      showFeedbackToast(`Cleared ${cleared} unlocked hourly slot(s) for today!`, "info");
+    }
+
+    function clearWeeklyDayOrAll(clearAll = false) {
+      if (clearAll) {
+        let count = 0;
+        dayNamesList.forEach(d => {
+          count += (state.weeklyPlan[d] || []).length;
+          state.weeklyPlan[d] = [];
+        });
+        saveState();
+        renderWeeklyView();
+        renderAiView();
+        playSynthSound('click');
+        showFeedbackToast(`Cleared entire 7-day weekly schedule (${count} tasks removed)!`, "info");
+      } else {
+        const count = (state.weeklyPlan[selectedWeeklyDay] || []).length;
+        state.weeklyPlan[selectedWeeklyDay] = [];
+        saveState();
+        renderWeeklyView();
+        renderAiView();
+        playSynthSound('click');
+        showFeedbackToast(`Cleared ${count} task(s) from ${selectedWeeklyDay}!`, "info");
+      }
+    }
+
+    function clearPendingDailyTasks() {
+      const before = state.tasks.filter(t => !t.completed).length;
+      state.tasks = state.tasks.filter(t => t.completed);
+      clearPickerTimer();
+      saveState();
+      renderTasks();
+      updateDashboard();
+      renderAiView();
+      playSynthSound('click');
+      showFeedbackToast(`Cleared ${before} pending task(s) from Today's Backlog!`, "info");
+    }
+
+    function clearAllActiveMasterTimers() {
+      const before = state.goalTasks.filter(g => !g.completed).length;
+      state.activeGoalTimer = { goalId: null, isRunning: false, lastTickMs: null };
+      state.goalTasks = state.goalTasks.filter(g => g.completed);
+      saveState();
+      populateGoalDropdowns();
+      renderGoalTasks();
+      renderTasks();
+      renderAiView();
+      playSynthSound('click');
+      showFeedbackToast(`Removed ${before} active Master Task Timer(s)!`, "info");
     }
 
     function renderAiView() {
@@ -994,16 +1203,24 @@
 
       const wdInput = document.getElementById('aiWeekdayAvailInput');
       const weInput = document.getElementById('aiWeekendAvailInput');
+      const tdInput = document.getElementById('aiTodayAvailInput');
       if (wdInput && document.activeElement !== wdInput) wdInput.value = state.aiConfig.weekdayAvailability || "6:00 PM - 9:00 PM (3h/day)";
       if (weInput && document.activeElement !== weInput) weInput.value = state.aiConfig.weekendAvailability || "10:00 AM - 4:00 PM (6h/day)";
+      if (tdInput && document.activeElement !== tdInput) tdInput.value = state.aiConfig.todayAvailabilityOverride || "";
+
+      updateAiOperationModeUI();
 
       const pendingDaily = state.tasks.filter(t => !t.completed).length;
       const activeGoals = state.goalTasks.filter(g => !g.completed).length;
       let weeklyCount = 0;
       dayNamesList.forEach(d => { weeklyCount += (state.weeklyPlan[d] || []).length; });
+      let hourlyCount = 0;
+      for (let h = 6; h <= 23; h++) {
+        if (state.planner.hours[h] && state.planner.hours[h].text) hourlyCount++;
+      }
       const summaryBadge = document.getElementById('aiContextSummaryBadge');
       if (summaryBadge) {
-        summaryBadge.textContent = `${activeGoals} Timers • ${pendingDaily} Daily • ${weeklyCount} Wk`;
+        summaryBadge.textContent = `${activeGoals} Timers • ${weeklyCount} Wk • ${hourlyCount} Hr`;
       }
     }
 
@@ -1085,13 +1302,14 @@
         return;
       }
 
+      const opMode = state.aiConfig.operationMode || "smart";
       const userPromptEl = document.getElementById('aiPromptInput');
-      const userRequest = (userPromptEl?.value || "").trim() || "Create Master Task Timers as needed, distribute my tasks across the entire week (Mon-Sun) and today's hourly schedule based on my availability, and calculate my weekend completion hours and percentage.";
+      const userRequest = (userPromptEl?.value || "").trim() || "Create or reschedule my Master Task Timers, Weekly plan (Mon-Sun), and Today's Hourly schedule to fit my available time slots, and calculate my weekend completion hours and percentage.";
 
       const btn = document.getElementById('aiGenerateBtn');
       const originalBtnHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>PLANNING MASTER TIMERS, WEEK & WEEKEND %...</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>AI ANALYZING & RESCHEDULING PLAN...</span>`;
       playSynthSound('click');
 
       try {
@@ -1133,34 +1351,46 @@
         for (let h = 6; h <= 23; h++) {
           const slot = state.planner.hours[h];
           if (slot && slot.text) {
-            existingHourly[h] = { text: slot.text, locked: slot.locked, productiveMinutes: Math.floor((slot.productiveMs || 0) / 60000) };
+            existingHourly[h] = {
+              text: slot.text,
+              locked: slot.locked,
+              linkedGoalId: slot.goalId || null,
+              productiveMinutes: Math.floor((slot.productiveMs || 0) / 60000)
+            };
           }
         }
 
-        const systemInstruction = `You are PickFlow AI, an intelligent full-stack time-management & master task planner.
-You help the user:
-1. Create NEW Master Task Timers ("newMasterGoalTimers") with total expected hours whenever the user mentions new projects, study topics, or multi-hour tasks to complete (or if they need structured Master Timers for their goals). Assign each new master timer a unique "tempKey" (e.g. "goal_1", "goal_2"). For existing activeMasterGoalTimers, reference their exact "id".
-2. Distribute tasks across the ENTIRE 7-Day Week ("weeklySchedule" covering "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun") respecting the user's stated daily/weekday/weekend available time windows. Each weekly item must include "day", "taskText", "priority" ("low"|"medium"|"high"), "allocatedHours" (number of hours on that day), "timeWindow" (e.g. "6:00 PM - 8:00 PM"), and "linkedGoalRef" (matching either an existing goal "id" or a new master timer "tempKey").
-3. Plan TODAY's Hourly Schedule ("hourlySchedule", integer hours 6 to 23, where 6 = 6:00 AM and 23 = 11:00 PM) and Today's Daily Backlog ("newDailyTasks") respecting the user's available hours today (${todayDayName}, current hour: ${currentHour}:00). Do not overwrite locked past hours (< ${currentHour}). Link hourly slots and daily tasks to their Master Task Timer via "linkedGoalRef".
-4. Calculate a detailed Weekend & Weekly Completion Forecast ("completionForecast") showing how many hours and what percentage of each task (and overall workload) the user will complete over the weekend (Saturday + Sunday) and cumulatively by Sunday night if they follow the schedule:
-   - "weekdayAvailableHours": total planned hours across Mon–Fri
-   - "weekendAvailableHours": total planned hours across Sat + Sun
-   - "overallWeekendCompletionPct": overall % of total remaining workload completed by Sunday night
-   - "weekendAdvice": a warm, motivating 1-2 sentence breakdown explaining how many hours and what % of their goals they will crush in the weekend if they follow this plan.
-   - "taskForecasts": array covering every active and newly created Master Task Timer with:
-     * "taskTitle": string
-     * "totalTaskHours": total hours required for the task
-     * "weekdayHoursPlanned": hours scheduled Mon–Fri
-     * "weekendHoursPlanned": hours scheduled on Sat + Sun
-     * "weekendOnlyCompletionPct": percentage of totalTaskHours completed specifically during Sat + Sun ((weekendHoursPlanned / totalTaskHours) * 100)
-     * "cumulativeCompletionBySundayPct": total percentage of the task completed by Sunday night including prior spentHours + weekdayHoursPlanned + weekendHoursPlanned (capped at 100)
-     * "remainingHoursAfterWeekend": hours left after Sunday night (max 0)`;
+        const systemInstruction = `You are PickFlow AI, an intelligent full-stack time-management & master task scheduler with full power to CREATE, DELETE, REPLACE, and RESCHEDULE the user's current plans and availability time slots.
+Current day: ${todayDayName}, current hour (24h format): ${currentHour}:00.
+Selected Operation Mode: "${opMode}" ("smart" = decide based on user request; "reschedule" = move existing scheduled tasks into the user's new availability slots and clear old slots outside availability; "replace" = wipe & replace unlocked hourly/weekly schedules with the new plan; "merge" = only add to empty slots without deleting existing items).
+
+CRITICAL CAPABILITIES & RULES:
+1. AVAILABILITY TIME SLOTS & UPDATES ("updatedAvailability"):
+   - Respect the user's stated availability time slots (Weekday, Weekend, and Today Override). If the user states new available times in their prompt (e.g. "I am only available 8 PM - 10 PM on weekdays now" or "On weekends I can work 1 PM - 6 PM"), return those updated strings in "updatedAvailability" so the app updates their saved availability settings!
+   - When rescheduling for new availability time slots today, set "planMutations.replaceEntireHourlyPlan" to true (or list the old out-of-window hours in "planMutations.hoursToClear") so old hourly tasks outside the user's available hours are removed/moved cleanly.
+2. DELETING, REPLACING & RESCHEDULING ("planMutations"):
+   - To replace the entire 7-day weekly schedule (e.g., when redistributing the week for new availability or replacing the current plan), set "planMutations.replaceEntireWeeklyPlan" to true.
+   - To replace or clear specific days of the week (e.g., "I'm busy on Tuesday, move Tuesday's tasks to Thursday" or "Clear Wednesday"), include those day names (e.g. ["Tue"]) in "planMutations.weeklyDaysToReplace" and schedule the moved tasks on the target days in "weeklySchedule".
+   - To delete specific weekly tasks by ID or title without wiping the whole day, put their IDs or exact titles in "planMutations.weeklyTasksToDelete".
+   - To delete specific pending Daily Backlog tasks, put their IDs or exact titles in "planMutations.dailyTasksToDelete", or set "planMutations.replacePendingDailyBacklog" to true to replace the daily backlog completely.
+   - To delete specific Master Task Timers, put their IDs or exact titles in "planMutations.goalTimersToDelete".
+   - To update/reschedule an existing Master Task Timer's total hours or title, add an entry in "planMutations.goalTimersToUpdate" with its "id" (or current title), "newText", and "newExpectedHours".
+   - Document every deletion, replacement, availability slot change, or time-slot move in "rescheduleSummary" (array of concise strings).
+3. MASTER TASK TIMERS ("newMasterGoalTimers"):
+   - Create new Master Task Timers with total "expectedHours" and a unique "tempKey" (e.g. "goal_1") for new multi-hour goals/projects. Link weekly, daily, and hourly items to either an existing goal "id" or a new "tempKey" via "linkedGoalRef".
+4. WEEKLY & HOURLY SCHEDULES ("weeklySchedule" & "hourlySchedule"):
+   - "weeklySchedule" covers "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" with "day", "taskText", "priority", "allocatedHours", "timeWindow" (matching the user's availability slot!), and "linkedGoalRef".
+   - "hourlySchedule" covers today's hours (integers 6 to 23) strictly within today's available time slots. Do not overwrite locked past hours (< ${currentHour}).
+5. WEEKEND COMPLETION FORECAST ("completionForecast"):
+   - Calculate how many hours and what % of each task (and overall workload) the user will complete over the weekend (Sat + Sun) and cumulatively by Sunday night if they follow the schedule.`;
 
         const contextPayload = JSON.stringify({
           currentHour24: currentHour,
           todayDayOfWeek: todayDayName,
+          operationMode: opMode,
           statedWeekdayAvailability: state.aiConfig.weekdayAvailability,
           statedWeekendAvailability: state.aiConfig.weekendAvailability,
+          statedTodayAvailabilityOverride: state.aiConfig.todayAvailabilityOverride || null,
           userRequest: userRequest,
           activeMasterGoalTimers: activeGoalTimers,
           pendingDailyBacklog: pendingDaily,
@@ -1177,6 +1407,63 @@ You help the user:
               type: "OBJECT",
               properties: {
                 analysisSummary: { type: "STRING" },
+                rescheduleSummary: {
+                  type: "ARRAY",
+                  items: { type: "STRING" }
+                },
+                updatedAvailability: {
+                  type: "OBJECT",
+                  properties: {
+                    weekdayAvailability: { type: "STRING" },
+                    weekendAvailability: { type: "STRING" },
+                    todayAvailabilityOverride: { type: "STRING" }
+                  }
+                },
+                planMutations: {
+                  type: "OBJECT",
+                  properties: {
+                    replaceEntireHourlyPlan: { type: "BOOLEAN" },
+                    hoursToClear: {
+                      type: "ARRAY",
+                      items: { type: "INTEGER" }
+                    },
+                    replaceEntireWeeklyPlan: { type: "BOOLEAN" },
+                    weeklyDaysToReplace: {
+                      type: "ARRAY",
+                      items: { type: "STRING" }
+                    },
+                    weeklyTasksToDelete: {
+                      type: "ARRAY",
+                      items: { type: "STRING" }
+                    },
+                    replacePendingDailyBacklog: { type: "BOOLEAN" },
+                    dailyTasksToDelete: {
+                      type: "ARRAY",
+                      items: { type: "STRING" }
+                    },
+                    goalTimersToDelete: {
+                      type: "ARRAY",
+                      items: { type: "STRING" }
+                    },
+                    goalTimersToUpdate: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          idOrTitle: { type: "STRING" },
+                          newText: { type: "STRING" },
+                          newExpectedHours: { type: "NUMBER" }
+                        },
+                        required: ["idOrTitle", "newText", "newExpectedHours"]
+                      }
+                    }
+                  },
+                  required: [
+                    "replaceEntireHourlyPlan",
+                    "replaceEntireWeeklyPlan",
+                    "replacePendingDailyBacklog"
+                  ]
+                },
                 newMasterGoalTimers: {
                   type: "ARRAY",
                   items: {
@@ -1272,7 +1559,7 @@ You help the user:
                   ]
                 }
               },
-              required: ["analysisSummary", "weeklySchedule", "hourlySchedule", "completionForecast"]
+              required: ["analysisSummary", "planMutations", "weeklySchedule", "hourlySchedule", "completionForecast"]
             }
           }
         };
@@ -1292,7 +1579,7 @@ You help the user:
           applyLastAiProposal(true);
         } else {
           playSynthSound('congrats');
-          showFeedbackToast("AI Master Plan & Weekend Forecast ready! Review below.", "success");
+          showFeedbackToast("AI Reschedule & Plan ready! Review below & tap Apply.", "success");
         }
       } catch (err) {
         playSynthSound('error');
@@ -1310,7 +1597,74 @@ You help the user:
 
       card.classList.remove('hidden');
       card.classList.add('flex');
-      summaryEl.textContent = proposal.analysisSummary || "Here is your optimized Master Timer, Weekly, and Hourly schedule:";
+      summaryEl.textContent = proposal.analysisSummary || "Here is your updated Master Timer, Weekly, and Hourly schedule:";
+
+      // 0. Render Reschedule / Delete / Replace Mutations Log
+      const mutSection = document.getElementById('aiMutationsSection');
+      const mutListEl = document.getElementById('aiMutationsList');
+      const mutBadgeEl = document.getElementById('aiMutationsBadge');
+      if (mutSection && mutListEl) {
+        mutListEl.innerHTML = '';
+        const mut = proposal.planMutations || {};
+        const ua = proposal.updatedAvailability || {};
+        const bullets = [];
+
+        if (ua.weekdayAvailability && ua.weekdayAvailability !== state.aiConfig.weekdayAvailability) {
+          bullets.push(`🕒 Weekday Availability Slot → ${ua.weekdayAvailability}`);
+        }
+        if (ua.weekendAvailability && ua.weekendAvailability !== state.aiConfig.weekendAvailability) {
+          bullets.push(`🌟 Weekend Availability Slot → ${ua.weekendAvailability}`);
+        }
+        if (ua.todayAvailabilityOverride) {
+          bullets.push(`⚡ Today Availability Slot → ${ua.todayAvailabilityOverride}`);
+        }
+        if (mut.replaceEntireHourlyPlan) {
+          bullets.push(`♻️ Replacing all unlocked Hourly slots today to fit available times`);
+        } else if (Array.isArray(mut.hoursToClear) && mut.hoursToClear.length > 0) {
+          bullets.push(`🧹 Clearing Hourly slot(s): ${mut.hoursToClear.map(h => h > 12 ? (h-12)+'PM' : (h===12?'12PM':h+'AM')).join(', ')}`);
+        }
+        if (mut.replaceEntireWeeklyPlan) {
+          bullets.push(`♻️ Replacing entire 7-Day Weekly Schedule with redistributed plan`);
+        } else if (Array.isArray(mut.weeklyDaysToReplace) && mut.weeklyDaysToReplace.length > 0) {
+          bullets.push(`🔄 Rescheduling Weekly Day(s): ${mut.weeklyDaysToReplace.join(', ')}`);
+        }
+        if (Array.isArray(mut.weeklyTasksToDelete) && mut.weeklyTasksToDelete.length > 0) {
+          bullets.push(`🗑️ Deleting ${mut.weeklyTasksToDelete.length} Weekly task(s)`);
+        }
+        if (mut.replacePendingDailyBacklog) {
+          bullets.push(`♻️ Replacing pending Daily Backlog tasks`);
+        } else if (Array.isArray(mut.dailyTasksToDelete) && mut.dailyTasksToDelete.length > 0) {
+          bullets.push(`🗑️ Deleting ${mut.dailyTasksToDelete.length} Daily task(s)`);
+        }
+        if (Array.isArray(mut.goalTimersToDelete) && mut.goalTimersToDelete.length > 0) {
+          bullets.push(`🗑️ Removing ${mut.goalTimersToDelete.length} Master Task Timer(s)`);
+        }
+        if (Array.isArray(mut.goalTimersToUpdate) && mut.goalTimersToUpdate.length > 0) {
+          mut.goalTimersToUpdate.forEach(u => {
+            bullets.push(`⏱️ Updated Master Timer "${u.newText}" → ${u.newExpectedHours}h`);
+          });
+        }
+        if (Array.isArray(proposal.rescheduleSummary)) {
+          proposal.rescheduleSummary.forEach(s => {
+            if (s && !bullets.includes(s)) bullets.push(`• ${s}`);
+          });
+        }
+
+        if (bullets.length > 0) {
+          mutSection.classList.remove('hidden');
+          mutSection.classList.add('flex');
+          mutBadgeEl.textContent = `${bullets.length} Action${bullets.length === 1 ? '' : 's'}`;
+          bullets.forEach(b => {
+            const div = document.createElement('div');
+            div.className = "bg-slate-950/70 px-2.5 py-1.5 rounded-lg border border-amber-500/20 text-[10px] text-amber-200 leading-snug";
+            div.textContent = b;
+            mutListEl.appendChild(div);
+          });
+        } else {
+          mutSection.classList.add('hidden');
+          mutSection.classList.remove('flex');
+        }
+      }
 
       // 1. Render Weekend & Weekly Completion Forecast
       const fc = proposal.completionForecast || {};
@@ -1362,13 +1716,15 @@ You help the user:
         });
       }
 
-      // 2. Render Proposed New Master Timers
+      // 2. Render Proposed New & Updated Master Timers
       const timersListEl = document.getElementById('aiProposedMasterTimersList');
       const timersCountEl = document.getElementById('aiMasterTimersCount');
       timersListEl.innerHTML = '';
       const newTimers = proposal.newMasterGoalTimers || [];
-      timersCountEl.textContent = `${newTimers.length} New Timer${newTimers.length === 1 ? '' : 's'}`;
-      if (newTimers.length === 0) {
+      const updatedTimers = (proposal.planMutations && proposal.planMutations.goalTimersToUpdate) || [];
+      const totalTimerItems = newTimers.length + updatedTimers.length;
+      timersCountEl.textContent = `${totalTimerItems} Timer Action${totalTimerItems === 1 ? '' : 's'}`;
+      if (totalTimerItems === 0) {
         timersListEl.innerHTML = `<div class="text-[10px] text-slate-500 italic bg-slate-950/50 p-2 rounded-xl border border-slate-800/50">Using your existing active Master Task Timers.</div>`;
       } else {
         newTimers.forEach(nt => {
@@ -1377,14 +1733,31 @@ You help the user:
           row.innerHTML = `
             <div class="flex items-center gap-2 min-w-0">
               <div class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                <i class="fa-solid fa-stopwatch text-xs"></i>
+                <i class="fa-solid fa-plus text-xs"></i>
               </div>
               <div class="flex flex-col min-w-0">
                 <span class="text-xs font-bold text-slate-100 truncate">${nt.text}</span>
-                <span class="text-[9px] text-slate-400 truncate">${nt.reason || 'Auto-synced across Weekly, Daily & Hourly'}</span>
+                <span class="text-[9px] text-slate-400 truncate">${nt.reason || 'New Master Timer — Auto-synced'}</span>
               </div>
             </div>
             <span class="text-xs font-mono font-black text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded-lg border border-emerald-500/30 flex-shrink-0">${Number(nt.expectedHours || 1).toFixed(1)}h</span>
+          `;
+          timersListEl.appendChild(row);
+        });
+        updatedTimers.forEach(ut => {
+          const row = document.createElement('div');
+          row.className = "flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/80 border border-amber-500/30";
+          row.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 flex-shrink-0">
+                <i class="fa-solid fa-pen text-xs"></i>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs font-bold text-slate-100 truncate">${ut.newText}</span>
+                <span class="text-[9px] text-amber-300 truncate">Rescheduled / Updated Master Timer</span>
+              </div>
+            </div>
+            <span class="text-xs font-mono font-black text-amber-400 bg-amber-950/80 px-2 py-1 rounded-lg border border-amber-500/30 flex-shrink-0">${Number(ut.newExpectedHours || 1).toFixed(1)}h</span>
           `;
           timersListEl.appendChild(row);
         });
@@ -1485,19 +1858,71 @@ You help the user:
       return null;
     }
 
+    function matchesIdOrTitle(item, targetList) {
+      if (!item || !Array.isArray(targetList) || targetList.length === 0) return false;
+      const itemTextLower = (item.text || '').toLowerCase().trim();
+      return targetList.some(target => {
+        if (!target) return false;
+        const tStr = String(target).trim();
+        const tLower = tStr.toLowerCase();
+        return item.id === tStr || itemTextLower === tLower || (tLower.length > 3 && itemTextLower.includes(tLower));
+      });
+    }
+
     function applyLastAiProposal(silentToast = false) {
       if (!lastAiProposal) return;
 
       const applyGoals = document.getElementById('scopeApplyGoals')?.checked !== false;
       const applyWeekly = document.getElementById('scopeApplyWeekly')?.checked !== false;
       const applyDailyHourly = document.getElementById('scopeApplyDailyHourly')?.checked !== false;
+      const opMode = state.aiConfig.operationMode || "smart";
+      const mut = lastAiProposal.planMutations || {};
+
+      // 0. Update user availability time slots if returned by AI
+      if (lastAiProposal.updatedAvailability) {
+        const ua = lastAiProposal.updatedAvailability;
+        if (ua.weekdayAvailability && ua.weekdayAvailability.trim()) {
+          state.aiConfig.weekdayAvailability = ua.weekdayAvailability.trim();
+        }
+        if (ua.weekendAvailability && ua.weekendAvailability.trim()) {
+          state.aiConfig.weekendAvailability = ua.weekendAvailability.trim();
+        }
+        if (typeof ua.todayAvailabilityOverride === 'string' && ua.todayAvailabilityOverride.trim()) {
+          state.aiConfig.todayAvailabilityOverride = ua.todayAvailabilityOverride.trim();
+        }
+      }
 
       const tempKeyMap = {};
       let createdTimersCount = 0;
+      let updatedTimersCount = 0;
+      let deletedItemsCount = 0;
       let appliedWeeklyCount = 0;
       let appliedHoursCount = 0;
 
-      // 1. Create or map Master Task Timers
+      // 1. Master Task Timers: Deletions, Updates & Creations
+      if (applyGoals && opMode !== 'merge') {
+        if (Array.isArray(mut.goalTimersToDelete) && mut.goalTimersToDelete.length > 0) {
+          const beforeLen = state.goalTasks.length;
+          state.goalTasks = state.goalTasks.filter(g => g.completed || !matchesIdOrTitle(g, mut.goalTimersToDelete));
+          deletedItemsCount += (beforeLen - state.goalTasks.length);
+        }
+        if (Array.isArray(mut.goalTimersToUpdate) && mut.goalTimersToUpdate.length > 0) {
+          mut.goalTimersToUpdate.forEach(upd => {
+            const targetGoal = state.goalTasks.find(g => !g.completed && matchesIdOrTitle(g, [upd.idOrTitle]));
+            if (targetGoal) {
+              ensureGoalProps(targetGoal);
+              if (upd.newText && upd.newText.trim()) targetGoal.text = upd.newText.trim();
+              if (typeof upd.newExpectedHours === 'number' && upd.newExpectedHours > 0) {
+                const newExpMs = Math.round(upd.newExpectedHours * 3600000);
+                targetGoal.expectedMs = newExpMs;
+                targetGoal.remainingMs = Math.max(0, newExpMs - (targetGoal.spentMs || 0));
+              }
+              updatedTimersCount++;
+            }
+          });
+        }
+      }
+
       const newTimers = lastAiProposal.newMasterGoalTimers || [];
       newTimers.forEach(nt => {
         if (!nt.text) return;
@@ -1522,38 +1947,107 @@ You help the user:
         }
       });
 
-      // 2. Apply 7-Day Weekly Schedule Distribution
-      if (applyWeekly && Array.isArray(lastAiProposal.weeklySchedule)) {
-        lastAiProposal.weeklySchedule.forEach(item => {
-          const matchedDay = dayNamesList.find(d => (item.day || '').toLowerCase().startsWith(d.toLowerCase()));
-          if (!matchedDay || !item.taskText) return;
-          if (!Array.isArray(state.weeklyPlan[matchedDay])) state.weeklyPlan[matchedDay] = [];
-
-          const linkedGoalId = resolveGoalId(item.linkedGoalRef, item.taskText, tempKeyMap);
-          const prio = ['low', 'medium', 'high'].includes((item.priority || '').toLowerCase()) ? item.priority.toLowerCase() : 'medium';
-
-          // Avoid duplicate task on the same day with same timeWindow
-          const alreadyOnDay = state.weeklyPlan[matchedDay].some(
-            t => t.text.toLowerCase() === item.taskText.toLowerCase() && (t.timeWindow || '') === (item.timeWindow || '')
-          );
-          if (!alreadyOnDay) {
-            state.weeklyPlan[matchedDay].push({
-              id: crypto.randomUUID(),
-              text: item.taskText.trim(),
-              priority: prio,
-              goalId: linkedGoalId,
-              allocatedHours: Number(item.allocatedHours || 1),
-              timeWindow: item.timeWindow || "",
-              completed: false,
-              createdAt: new Date().toISOString()
+      // 2. Weekly Schedule: Deletions, Replacements, Rescheduling & Additions
+      if (applyWeekly) {
+        if (opMode !== 'merge') {
+          if (opMode === 'replace' || opMode === 'reschedule' || mut.replaceEntireWeeklyPlan) {
+            dayNamesList.forEach(d => {
+              deletedItemsCount += (state.weeklyPlan[d] || []).length;
+              state.weeklyPlan[d] = [];
             });
-            appliedWeeklyCount++;
+          } else {
+            if (Array.isArray(mut.weeklyDaysToReplace) && mut.weeklyDaysToReplace.length > 0) {
+              mut.weeklyDaysToReplace.forEach(dayRaw => {
+                const matchedDay = dayNamesList.find(d => (dayRaw || '').toLowerCase().startsWith(d.toLowerCase()));
+                if (matchedDay && Array.isArray(state.weeklyPlan[matchedDay])) {
+                  deletedItemsCount += state.weeklyPlan[matchedDay].length;
+                  state.weeklyPlan[matchedDay] = [];
+                }
+              });
+            }
+            if (Array.isArray(mut.weeklyTasksToDelete) && mut.weeklyTasksToDelete.length > 0) {
+              dayNamesList.forEach(d => {
+                const before = (state.weeklyPlan[d] || []).length;
+                state.weeklyPlan[d] = (state.weeklyPlan[d] || []).filter(t => !matchesIdOrTitle(t, mut.weeklyTasksToDelete));
+                deletedItemsCount += (before - state.weeklyPlan[d].length);
+              });
+            }
           }
-        });
+        }
+
+        if (Array.isArray(lastAiProposal.weeklySchedule)) {
+          lastAiProposal.weeklySchedule.forEach(item => {
+            const matchedDay = dayNamesList.find(d => (item.day || '').toLowerCase().startsWith(d.toLowerCase()));
+            if (!matchedDay || !item.taskText) return;
+            if (!Array.isArray(state.weeklyPlan[matchedDay])) state.weeklyPlan[matchedDay] = [];
+
+            const linkedGoalId = resolveGoalId(item.linkedGoalRef, item.taskText, tempKeyMap);
+            const prio = ['low', 'medium', 'high'].includes((item.priority || '').toLowerCase()) ? item.priority.toLowerCase() : 'medium';
+
+            const alreadyOnDay = state.weeklyPlan[matchedDay].some(
+              t => t.text.toLowerCase() === item.taskText.toLowerCase() && (t.timeWindow || '') === (item.timeWindow || '')
+            );
+            if (!alreadyOnDay) {
+              state.weeklyPlan[matchedDay].push({
+                id: crypto.randomUUID(),
+                text: item.taskText.trim(),
+                priority: prio,
+                goalId: linkedGoalId,
+                allocatedHours: Number(item.allocatedHours || 1),
+                timeWindow: item.timeWindow || "",
+                completed: false,
+                createdAt: new Date().toISOString()
+              });
+              appliedWeeklyCount++;
+            }
+          });
+        }
       }
 
-      // 3. Apply Today's Daily Backlog & Hourly Schedule
+      // 3. Today's Daily Backlog & Hourly Schedule: Deletions, Replacements, Rescheduling & Additions
       if (applyDailyHourly) {
+        if (opMode !== 'merge') {
+          if (opMode === 'replace' || mut.replacePendingDailyBacklog) {
+            const before = state.tasks.filter(t => !t.completed).length;
+            state.tasks = state.tasks.filter(t => t.completed);
+            deletedItemsCount += before;
+          } else if (Array.isArray(mut.dailyTasksToDelete) && mut.dailyTasksToDelete.length > 0) {
+            const before = state.tasks.length;
+            state.tasks = state.tasks.filter(t => t.completed || !matchesIdOrTitle(t, mut.dailyTasksToDelete));
+            deletedItemsCount += (before - state.tasks.length);
+          }
+
+          // Clear unlocked hourly slots if replacing/rescheduling or specified in hoursToClear
+          if (opMode === 'replace' || opMode === 'reschedule' || mut.replaceEntireHourlyPlan) {
+            for (let h = 6; h <= 23; h++) {
+              const slot = state.planner.hours[h];
+              if (slot && slot.text && !slot.locked) {
+                if (state.planner.activeTimer.hour === h) {
+                  state.planner.activeTimer.isRunning = false;
+                  state.planner.activeTimer.hour = null;
+                }
+                state.planner.hours[h] = { text: "", goalId: null, dailyId: null, productiveMs: 0, locked: false };
+                deletedItemsCount++;
+              }
+            }
+          } else if (Array.isArray(mut.hoursToClear) && mut.hoursToClear.length > 0) {
+            mut.hoursToClear.forEach(hr => {
+              const h = parseInt(hr, 10);
+              if (!isNaN(h) && h >= 6 && h <= 23) {
+                const slot = state.planner.hours[h];
+                if (slot && !slot.locked) {
+                  if (state.planner.activeTimer.hour === h) {
+                    state.planner.activeTimer.isRunning = false;
+                    state.planner.activeTimer.hour = null;
+                  }
+                  state.planner.hours[h] = { text: "", goalId: null, dailyId: null, productiveMs: 0, locked: false };
+                  deletedItemsCount++;
+                }
+              }
+            });
+          }
+        }
+
         const newDailies = lastAiProposal.newDailyTasks || [];
         newDailies.forEach(nt => {
           if (!nt.text) return;
@@ -1578,6 +2072,7 @@ You help the user:
           if (isNaN(h) || h < 6 || h > 23) return;
           const existing = state.planner.hours[h];
           if (existing && existing.locked) return;
+          if (opMode === 'merge' && existing && existing.text) return;
 
           let goalId = resolveGoalId(item.linkedGoalRef, item.taskText, tempKeyMap);
           let dailyId = null;
@@ -1609,11 +2104,12 @@ You help the user:
       renderGoalTasks();
       renderTasks();
       renderWeeklyView();
+      renderPlanner();
       updateDashboard();
       renderAiView();
       playSynthSound('congrats');
       confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
-      showFeedbackToast(`Synced ${createdTimersCount} Master Timers, ${appliedWeeklyCount} Weekly blocks & ${appliedHoursCount} Hourly slots!`, "success");
+      showFeedbackToast(`Plan Updated! ${appliedWeeklyCount} Weekly, ${appliedHoursCount} Hourly & ${createdTimersCount + updatedTimersCount} Timer actions applied.`, "success");
     }
 
     // Deducts elapsed ms from Master Goal Task's remainingMs
